@@ -1,0 +1,975 @@
+/**
+ * ENUMS
+ */
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum UserRole {
+  MD
+  ADMIN
+  COORDINATOR
+  MANAGER
+  FIELD_EXECUTIVE
+  REPORT_WRITER
+  QUALITY_CONTROL
+}
+
+enum CaseType {
+  DRIVER_BGV
+  EMBASSY_BGV_1
+  EMBASSY_BGV_2
+  CORPORATE_BGV
+}
+
+enum CaseStatus {
+  CREATED
+  OCR_PENDING
+  OCR_IN_PROGRESS
+  OCR_COMPLETED
+  FIELD_ASSIGNED
+  FIELD_IN_PROGRESS
+  FIELD_SUBMITTED
+  UNDER_REVIEW
+  REPORT_DRAFT
+  QC_PENDING
+  QC_COMPLETED
+  REPORT_APPROVED
+  FINAL
+  REJECTED
+  ERROR
+  ARCHIVED
+}
+
+enum ApplicableCaseType {
+  DRIVER_BGV
+  EMBASSY_BGV_1
+  EMBASSY_BGV_2
+  CORPORATE_BGV
+  ALL
+}
+
+enum DataSource {
+  OCR_EXTRACTED
+  FIELD_VERIFIED
+  COORDINATOR_MANUAL
+  SYSTEM
+}
+
+enum FieldDataType {
+  TEXT
+  NUMBER
+  DATE
+  PHONE
+  EMAIL
+  ADDRESS
+  BOOLEAN
+  JSON
+}
+
+enum MatchMode {
+  EXACT
+  FUZZY
+  MANUAL_REVIEW
+}
+
+enum VerificationStatus {
+  GREEN
+  AMBER
+  RED
+  UNVERIFIED
+  NOT_APPLICABLE
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  IN_PROGRESS
+  SUBMITTED
+  UNDER_REVIEW
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum VisitStatus {
+  STARTED
+  COMPLETED
+  CANCELLED
+}
+
+enum VisitScheduleStatus {
+  PLANNED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum DocCollectionStatus {
+  PENDING
+  COLLECTED
+  NOT_AVAILABLE
+  NEEDS_REVISIT
+}
+
+enum FileKind {
+  ORIGINAL_PDF
+  OCR_TEXT
+  STRUCTURED_JSON
+  EXCEL_EXPORT
+  EVIDENCE_DOCUMENT
+  EVIDENCE_PHOTO
+  EVIDENCE_VIDEO
+  REPORT_PDF
+  CONSENT_DOCUMENT
+  OTHER
+}
+
+enum StorageProvider {
+  LOCAL
+  S3
+  EBS
+}
+
+enum OCRStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum EvidenceType {
+  NOTE
+  DOCUMENT
+  PHOTO
+  VIDEO
+}
+
+enum ReportStatus {
+  DRAFT
+  REVIEW
+  QC_PENDING
+  QC_PASSED
+  QC_REJECTED
+  APPROVED
+  FINAL
+  REJECTED
+  SUPERSEDED
+}
+
+enum ReportEventType {
+  GENERATED
+  SENT_FOR_REVIEW
+  REVIEWED
+  SENT_FOR_QC
+  QC_PASSED
+  QC_REJECTED
+  APPROVED
+  FINALIZED
+  REJECTED
+  DOWNLOADED
+  SUPERSEDED
+}
+
+enum AlertType {
+  RED_VERIFICATION_FLAG
+  TAT_WARNING
+  TAT_BREACH
+  FIELD_SUBMISSION_PENDING_REVIEW
+  REPORT_DRAFT_PENDING_APPROVAL
+  QC_PENDING
+  OCR_FAILED
+  SYSTEM
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  DISMISSED
+}
+
+enum TatStatus {
+  ON_TRACK
+  AT_RISK
+  BREACHED
+  COMPLETED
+}
+
+enum ConsentType {
+  BGV_CONSENT
+  DATA_PROCESSING_CONSENT
+  DOCUMENT_UPLOAD_CONSENT
+}
+
+enum ConsentStatus {
+  PENDING
+  OBTAINED
+  REVOKED
+  NOT_REQUIRED
+}
+
+enum DataPrincipalRequestType {
+  ACCESS
+  CORRECTION
+  ERASURE
+  WITHDRAW_CONSENT
+}
+
+enum DataPrincipalRequestStatus {
+  RECEIVED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+enum RetentionActionType {
+  DELETE_CASE_DATA
+  DELETE_FILES
+  ANONYMIZE
+  ARCHIVE
+}
+
+enum RetentionActionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+/**
+ * CORE PLATFORM
+ */
+
+model Tenant {
+  id        String       @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String       @unique
+  status    TenantStatus @default(ACTIVE)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  users                 User[]
+  candidateProfiles     CandidateProfile[]
+  cases                 BgvCase[]
+  visitSchedules        FieldVisitSchedule[]
+  dataCategories        DataCategory[]
+  retentionPolicies     RetentionPolicy[]
+  consentRecords        ConsentRecord[]
+  dataPrincipalRequests DataPrincipalRequest[]
+  alerts                Alert[]
+  auditLogs             AuditLog[]
+
+  @@map("tenants")
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @map("tenant_id") @db.Uuid
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  phone        String?
+  address      String?
+  designation  String?
+  role         UserRole
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  createdCases             BgvCase[]             @relation("CaseCreatedBy")
+  assignedCoordinatorCases BgvCase[]             @relation("CaseAssignedCoordinator")
+  caseStatusChanges        CaseStatusHistory[]   @relation("CaseStatusChangedBy")
+  uploadedCaseFiles        CaseFile[]            @relation("CaseFileUploadedBy")
+  createdCaseDataValues    CaseDataValue[]       @relation("CaseDataValueCreatedBy")
+  fieldAssignmentsAsExec   FieldAssignment[]     @relation("FieldAssignmentExec")
+  fieldAssignmentsAssigned FieldAssignment[]     @relation("FieldAssignmentAssignedBy")
+  visitSchedulesAsExec     FieldVisitSchedule[]  @relation("VisitScheduleExec")
+  createdVisitSchedules    FieldVisitSchedule[]  @relation("VisitScheduleCreatedBy")
+  uploadedEvidenceFiles    EvidenceFile[]        @relation("EvidenceUploadedBy")
+  comparisonOverrides      ComparisonResult[]    @relation("ComparisonOverriddenBy")
+  reportsGenerated         Report[]              @relation("ReportGeneratedBy")
+  reportsReviewed          Report[]              @relation("ReportReviewedBy")
+  reportsApproved          Report[]              @relation("ReportApprovedBy")
+  reportsQcDone            Report[]              @relation("ReportQcBy")
+  reportEvents             ReportEvent[]         @relation("ReportEventPerformedBy")
+  assignedAlerts           Alert[]               @relation("AlertAssignedTo")
+  resolvedAlerts           Alert[]               @relation("AlertResolvedBy")
+  capturedConsents         ConsentRecord[]       @relation("ConsentCapturedBy")
+  processedDpdpRequests    DataPrincipalRequest[] @relation("DprProcessedBy")
+  retentionActions         RetentionAction[]     @relation("RetentionActionExecutedBy")
+  auditLogs                AuditLog[]
+
+  @@index([tenantId])
+  @@index([role])
+  @@map("users")
+}
+
+model CandidateProfile {
+  id       String  @id @default(uuid()) @db.Uuid
+  tenantId String  @map("tenant_id") @db.Uuid
+  fullName String? @map("full_name")
+  contactNo String? @map("contact_no")
+  email    String?
+  address  String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  cases                 BgvCase[]
+  consentRecords        ConsentRecord[]
+  dataPrincipalRequests DataPrincipalRequest[]
+
+  @@index([tenantId])
+  @@index([fullName])
+  @@index([contactNo])
+  @@map("candidate_profiles")
+}
+
+model BgvCase {
+  id                   String     @id @default(uuid()) @db.Uuid
+  tenantId             String     @map("tenant_id") @db.Uuid
+  candidateProfileId   String?    @map("candidate_profile_id") @db.Uuid
+  caseNumber           String     @unique @map("case_number")
+  clientRefId          String?    @map("client_ref_id")
+  clientName           String?    @map("client_name")
+  candidateName        String?    @map("candidate_name")
+  initiationDate       DateTime?  @map("initiation_date")
+  caseType             CaseType   @map("case_type")
+  status               CaseStatus @default(CREATED)
+  createdById          String?    @map("created_by") @db.Uuid
+  assignedCoordinatorId String?   @map("assigned_coordinator") @db.Uuid
+  ocrCompletedAt       DateTime?  @map("ocr_completed_at")
+  fieldSubmittedAt     DateTime?  @map("field_submitted_at")
+  reportApprovedAt     DateTime?  @map("report_approved_at")
+  tatWarningAt         DateTime?  @map("tat_warning_at")
+  tatDueAt             DateTime?  @map("tat_due_at")
+  retentionExpiresAt   DateTime?  @map("retention_expires_at")
+  coordinatorRemarks   Json?      @map("coordinator_remarks")
+  createdAt            DateTime   @default(now()) @map("created_at")
+  updatedAt            DateTime   @updatedAt @map("updated_at")
+
+  tenant              Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  candidateProfile    CandidateProfile? @relation(fields: [candidateProfileId], references: [id], onDelete: SetNull)
+  createdBy           User?             @relation("CaseCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  assignedCoordinator User?             @relation("CaseAssignedCoordinator", fields: [assignedCoordinatorId], references: [id], onDelete: SetNull)
+
+  statusHistory         CaseStatusHistory[]
+  files                 CaseFile[]
+  ocrJobs               OCRJob[]
+  caseDataValues        CaseDataValue[]
+  fieldAssignments      FieldAssignment[]
+  fieldVisits           FieldVisit[]
+  visitScheduleDocs     FieldVisitScheduleDoc[]
+  evidenceFiles         EvidenceFile[]
+  comparisonResults     ComparisonResult[]
+  reports               Report[]
+  reportEvents          ReportEvent[]
+  alerts                Alert[]
+  tatSnapshots          TatSnapshot[]
+  consentRecords        ConsentRecord[]
+  dataPrincipalRequests DataPrincipalRequest[]
+  retentionActions      RetentionAction[]
+  auditLogs             AuditLog[]
+
+  @@index([tenantId])
+  @@index([caseType])
+  @@index([status])
+  @@index([createdAt])
+  @@map("cases")
+}
+
+model CaseStatusHistory {
+  id          String      @id @default(uuid()) @db.Uuid
+  caseId      String      @map("case_id") @db.Uuid
+  oldStatus   CaseStatus? @map("old_status")
+  newStatus   CaseStatus  @map("new_status")
+  changedById String?     @map("changed_by") @db.Uuid
+  remarks     String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  case      BgvCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  changedBy User?   @relation("CaseStatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([caseId])
+  @@map("case_status_history")
+}
+
+/**
+ * CONFIGURABLE BGV CATEGORIES AND FIELDS
+ */
+
+model DataCategory {
+  id                 String             @id @default(uuid()) @db.Uuid
+  tenantId           String             @map("tenant_id") @db.Uuid
+  code               String
+  name               String
+  applicableCaseType ApplicableCaseType @default(ALL) @map("applicable_case_type")
+  displayOrder       Int                @default(0) @map("display_order")
+  isActive           Boolean            @default(true) @map("is_active")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  fields            VerificationField[]
+  caseDataValues    CaseDataValue[]
+  comparisonResults ComparisonResult[]
+  matchThresholds   MatchThreshold[]
+
+  @@unique([tenantId, code, applicableCaseType])
+  @@index([tenantId])
+  @@map("data_categories")
+}
+
+model VerificationField {
+  id               String        @id @default(uuid()) @db.Uuid
+  categoryId       String        @map("category_id") @db.Uuid
+  code             String
+  name             String
+  dataType         FieldDataType @default(TEXT) @map("data_type")
+  isRequired       Boolean       @default(false) @map("is_required")
+  isOcrExtractable Boolean       @default(true) @map("is_ocr_extractable")
+  isManualEntryOnly Boolean      @default(false) @map("is_manual_entry_only")
+  displayOrder     Int           @default(0) @map("display_order")
+  isActive         Boolean       @default(true) @map("is_active")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  category DataCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  caseDataValues    CaseDataValue[]
+  comparisonResults ComparisonResult[]
+  matchThresholds   MatchThreshold[]
+
+  @@unique([categoryId, code])
+  @@index([categoryId])
+  @@map("verification_fields")
+}
+
+model MatchThreshold {
+  id         String    @id @default(uuid()) @db.Uuid
+  categoryId String?   @map("category_id") @db.Uuid
+  fieldId    String?   @map("field_id") @db.Uuid
+  matchMode  MatchMode @default(FUZZY) @map("match_mode")
+  greenScore Float     @default(0.90) @map("green_score")
+  amberScore Float     @default(0.70) @map("amber_score")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  category DataCategory?      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  field    VerificationField? @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+  @@index([fieldId])
+  @@map("match_thresholds")
+}
+
+/**
+ * FILES AND OCR
+ */
+
+model CaseFile {
+  id              String          @id @default(uuid()) @db.Uuid
+  caseId          String          @map("case_id") @db.Uuid
+  uploadedById    String?         @map("uploaded_by") @db.Uuid
+  fileKind        FileKind        @map("file_kind")
+  storageProvider StorageProvider @default(LOCAL) @map("storage_provider")
+  filePath        String          @map("file_path")
+  fileName        String          @map("file_name")
+  originalName    String?         @map("original_name")
+  mimeType        String?         @map("mime_type")
+  fileSizeKb      Int?            @map("file_size_kb")
+  checksum        String?
+  metadata        Json?
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  case       BgvCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  uploadedBy User?   @relation("CaseFileUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  inputForOcrJobs OCRJob[]        @relation("OcrInputFile")
+  reports         Report[]        @relation("ReportFile")
+  consentRecords  ConsentRecord[] @relation("ConsentDocumentFile")
+
+  @@index([caseId])
+  @@index([fileKind])
+  @@map("case_files")
+}
+
+model OCRJob {
+  id             String    @id @default(uuid()) @db.Uuid
+  caseId         String    @map("case_id") @db.Uuid
+  inputFileId    String?   @map("input_file_id") @db.Uuid
+  provider       String    @default("MISTRAL")
+  status         OCRStatus @default(PENDING)
+  pagesProcessed Int?      @map("pages_processed")
+  rawText        String?   @map("raw_text")
+  structuredJson Json?     @map("structured_json")
+  errorMessage   String?   @map("error_message")
+  startedAt      DateTime? @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  case      BgvCase   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  inputFile CaseFile? @relation("OcrInputFile", fields: [inputFileId], references: [id], onDelete: SetNull)
+
+  caseDataValues CaseDataValue[]
+
+  @@index([caseId])
+  @@index([status])
+  @@map("ocr_jobs")
+}
+
+/**
+ * CASE DATA VALUES
+ */
+
+model CaseDataValue {
+  id              String     @id @default(uuid()) @db.Uuid
+  caseId          String     @map("case_id") @db.Uuid
+  categoryId      String     @map("category_id") @db.Uuid
+  fieldId         String     @map("field_id") @db.Uuid
+  source          DataSource
+  value           String?
+  normalizedValue String?    @map("normalized_value")
+  confidenceScore Float?     @map("confidence_score")
+  ocrJobId        String?    @map("ocr_job_id") @db.Uuid
+  fieldVisitId    String?    @map("field_visit_id") @db.Uuid
+  createdById     String?    @map("created_by") @db.Uuid
+  isManuallyEdited Boolean   @default(false) @map("is_manually_edited")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  case       BgvCase           @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  category   DataCategory      @relation(fields: [categoryId], references: [id])
+  field      VerificationField @relation(fields: [fieldId], references: [id])
+  ocrJob     OCRJob?           @relation(fields: [ocrJobId], references: [id], onDelete: SetNull)
+  fieldVisit FieldVisit?       @relation(fields: [fieldVisitId], references: [id], onDelete: SetNull)
+  createdBy  User?             @relation("CaseDataValueCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  ocrComparisonResults   ComparisonResult[] @relation("ComparisonOcrDataValue")
+  fieldComparisonResults ComparisonResult[] @relation("ComparisonFieldDataValue")
+
+  @@index([caseId])
+  @@index([categoryId])
+  @@index([fieldId])
+  @@index([source])
+  @@map("case_data_values")
+}
+
+/**
+ * FIELD EXECUTIVE WORKFLOW
+ */
+
+model FieldAssignment {
+  id           String           @id @default(uuid()) @db.Uuid
+  caseId       String           @map("case_id") @db.Uuid
+  fieldExecId  String           @map("field_exec_id") @db.Uuid
+  assignedById String           @map("assigned_by") @db.Uuid
+  status       AssignmentStatus @default(ASSIGNED)
+  assignedAt   DateTime         @default(now()) @map("assigned_at")
+  submittedAt  DateTime?        @map("submitted_at")
+  remarks      String?
+
+  case       BgvCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fieldExec  User    @relation("FieldAssignmentExec", fields: [fieldExecId], references: [id])
+  assignedBy User    @relation("FieldAssignmentAssignedBy", fields: [assignedById], references: [id])
+
+  visits FieldVisit[]
+
+  @@index([caseId])
+  @@index([fieldExecId])
+  @@index([status])
+  @@map("field_assignments")
+}
+
+model FieldVisit {
+  id                String      @id @default(uuid()) @db.Uuid
+  caseId            String      @map("case_id") @db.Uuid
+  fieldAssignmentId String      @map("field_assignment_id") @db.Uuid
+  visitNumber       Int         @map("visit_number")
+  status            VisitStatus @default(STARTED)
+  gpsLat            Decimal?    @map("gps_lat") @db.Decimal(10, 7)
+  gpsLng            Decimal?    @map("gps_lng") @db.Decimal(10, 7)
+  gpsAccuracyMeters Decimal?    @map("gps_accuracy_meters") @db.Decimal(8, 2)
+  notes             String?
+  verificationMode  String?     @map("verification_mode")
+  verificationStatus String?    @map("verification_status")
+  groundObservations Json?      @map("ground_observations")
+  fieldValues       Json?       @map("field_values")
+  startedAt         DateTime?   @map("started_at")
+  visitedAt         DateTime    @default(now()) @map("visited_at")
+  submittedAt       DateTime?   @map("submitted_at")
+
+  case            BgvCase         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fieldAssignment FieldAssignment @relation(fields: [fieldAssignmentId], references: [id], onDelete: Cascade)
+
+  caseDataValues CaseDataValue[]
+  evidenceFiles  EvidenceFile[]
+
+  @@index([caseId])
+  @@index([fieldAssignmentId])
+  @@map("field_visits")
+}
+
+model FieldVisitSchedule {
+  id               String              @id @default(uuid()) @db.Uuid
+  tenantId         String              @map("tenant_id") @db.Uuid
+  fieldExecId      String              @map("field_exec_id") @db.Uuid
+  createdById      String?             @map("created_by") @db.Uuid
+  scheduledDate    DateTime            @map("scheduled_date") @db.Date
+  locationState    String?             @map("location_state")
+  locationDistrict String?             @map("location_district")
+  locationCity     String?             @map("location_city")
+  status           VisitScheduleStatus @default(PLANNED)
+  overallNotes     String?             @map("overall_notes")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  tenant    Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fieldExec User    @relation("VisitScheduleExec", fields: [fieldExecId], references: [id])
+  createdBy User?   @relation("VisitScheduleCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  docs FieldVisitScheduleDoc[]
+
+  @@index([tenantId])
+  @@index([fieldExecId])
+  @@index([scheduledDate])
+  @@index([status])
+  @@map("field_visit_schedules")
+}
+
+model FieldVisitScheduleDoc {
+  id               String             @id @default(uuid()) @db.Uuid
+  visitScheduleId  String             @map("visit_schedule_id") @db.Uuid
+  caseDbId         String?            @map("case_db_id") @db.Uuid
+  caseNumber       String?            @map("case_number")
+  candidateName    String?            @map("candidate_name")
+  docRef           String?            @map("doc_ref")
+  docType          String             @map("doc_type")
+  institution      String?
+  locationCity     String?            @map("location_city")
+  locationDistrict String?            @map("location_district")
+  locationState    String?            @map("location_state")
+  status           DocCollectionStatus @default(PENDING)
+  verificationNotes String?           @map("verification_notes")
+  personMet        String?            @map("person_met")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  visitSchedule FieldVisitSchedule @relation(fields: [visitScheduleId], references: [id], onDelete: Cascade)
+  caseDb        BgvCase?           @relation(fields: [caseDbId], references: [id], onDelete: SetNull)
+
+  @@index([visitScheduleId])
+  @@index([caseDbId])
+  @@map("field_visit_schedule_docs")
+}
+
+model EvidenceFile {
+  id           String       @id @default(uuid()) @db.Uuid
+  caseId       String       @map("case_id") @db.Uuid
+  fieldVisitId String?      @map("field_visit_id") @db.Uuid
+  uploadedById String?      @map("uploaded_by") @db.Uuid
+  evidenceType EvidenceType @map("evidence_type")
+  filePath     String       @map("file_path")
+  fileName     String       @map("file_name")
+  originalName String?      @map("original_name")
+  mimeType     String?      @map("mime_type")
+  fileSizeKb   Int?         @map("file_size_kb")
+  gpsLat       Decimal?     @map("gps_lat") @db.Decimal(10, 7)
+  gpsLng       Decimal?     @map("gps_lng") @db.Decimal(10, 7)
+  notes        String?
+  metadata     Json?
+  uploadedAt   DateTime     @default(now()) @map("uploaded_at")
+
+  case       BgvCase     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fieldVisit FieldVisit? @relation(fields: [fieldVisitId], references: [id], onDelete: SetNull)
+  uploadedBy User?       @relation("EvidenceUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([caseId])
+  @@index([fieldVisitId])
+  @@index([evidenceType])
+  @@map("evidence_files")
+}
+
+/**
+ * COMPARISON ENGINE
+ */
+
+model ComparisonResult {
+  id                   String             @id @default(uuid()) @db.Uuid
+  caseId               String             @map("case_id") @db.Uuid
+  categoryId           String             @map("category_id") @db.Uuid
+  fieldId              String             @map("field_id") @db.Uuid
+  ocrDataValueId       String?            @map("ocr_data_value_id") @db.Uuid
+  fieldDataValueId     String?            @map("field_data_value_id") @db.Uuid
+  ocrValue             String?            @map("ocr_value")
+  fieldValue           String?            @map("field_value")
+  normalizedOcrValue   String?            @map("normalized_ocr_value")
+  normalizedFieldValue String?            @map("normalized_field_value")
+  similarityScore      Float?             @map("similarity_score")
+  autoStatus           VerificationStatus @map("auto_status")
+  finalStatus          VerificationStatus @map("final_status")
+  overriddenById       String?            @map("overridden_by") @db.Uuid
+  overrideReason       String?            @map("override_reason")
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+
+  case           BgvCase           @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  category       DataCategory      @relation(fields: [categoryId], references: [id])
+  field          VerificationField @relation(fields: [fieldId], references: [id])
+  ocrDataValue   CaseDataValue?    @relation("ComparisonOcrDataValue", fields: [ocrDataValueId], references: [id], onDelete: SetNull)
+  fieldDataValue CaseDataValue?    @relation("ComparisonFieldDataValue", fields: [fieldDataValueId], references: [id], onDelete: SetNull)
+  overriddenBy   User?             @relation("ComparisonOverriddenBy", fields: [overriddenById], references: [id], onDelete: SetNull)
+
+  @@index([caseId])
+  @@index([autoStatus])
+  @@index([finalStatus])
+  @@map("comparison_results")
+}
+
+/**
+ * REPORTS
+ */
+
+model Report {
+  id                 String       @id @default(uuid()) @db.Uuid
+  caseId             String       @map("case_id") @db.Uuid
+  fileId             String?      @unique @map("file_id") @db.Uuid
+  version            Int          @default(1)
+  status             ReportStatus @default(DRAFT)
+  requiresQc         Boolean      @default(false) @map("requires_qc")
+  generatedById      String?      @map("generated_by") @db.Uuid
+  reviewedById       String?      @map("reviewed_by") @db.Uuid
+  approvedById       String?      @map("approved_by") @db.Uuid
+  qcById             String?      @map("qc_by") @db.Uuid
+  coordinatorRemarks String?      @map("coordinator_remarks")
+  managerRemarks     String?      @map("manager_remarks")
+  qcRemarks          String?      @map("qc_remarks")
+  generatedAt        DateTime     @default(now()) @map("generated_at")
+  reviewedAt         DateTime?    @map("reviewed_at")
+  approvedAt         DateTime?    @map("approved_at")
+  finalizedAt        DateTime?    @map("finalized_at")
+
+  case        BgvCase   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  file        CaseFile? @relation("ReportFile", fields: [fileId], references: [id], onDelete: SetNull)
+  generatedBy User?     @relation("ReportGeneratedBy", fields: [generatedById], references: [id], onDelete: SetNull)
+  reviewedBy  User?     @relation("ReportReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  approvedBy  User?     @relation("ReportApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  qcBy        User?     @relation("ReportQcBy", fields: [qcById], references: [id], onDelete: SetNull)
+
+  events ReportEvent[]
+
+  @@unique([caseId, version])
+  @@index([caseId])
+  @@index([status])
+  @@map("reports")
+}
+
+model ReportEvent {
+  id            String          @id @default(uuid()) @db.Uuid
+  reportId      String          @map("report_id") @db.Uuid
+  caseId        String          @map("case_id") @db.Uuid
+  eventType     ReportEventType @map("event_type")
+  fromStatus    ReportStatus?   @map("from_status")
+  toStatus      ReportStatus?   @map("to_status")
+  performedById String?         @map("performed_by") @db.Uuid
+  remarks       String?
+  metadata      Json?
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  report      Report  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  case        BgvCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  performedBy User?   @relation("ReportEventPerformedBy", fields: [performedById], references: [id], onDelete: SetNull)
+
+  @@index([reportId])
+  @@index([caseId])
+  @@map("report_events")
+}
+
+/**
+ * ALERTS AND TAT
+ */
+
+model Alert {
+  id           String        @id @default(uuid()) @db.Uuid
+  tenantId     String        @map("tenant_id") @db.Uuid
+  caseId       String?       @map("case_id") @db.Uuid
+  alertType    AlertType     @map("alert_type")
+  severity     AlertSeverity @default(MEDIUM)
+  status       AlertStatus   @default(OPEN)
+  title        String
+  message      String
+  assignedToId String?       @map("assigned_to") @db.Uuid
+  resolvedById String?       @map("resolved_by") @db.Uuid
+  dueAt        DateTime?     @map("due_at")
+  resolvedAt   DateTime?     @map("resolved_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  case       BgvCase? @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  assignedTo User?    @relation("AlertAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  resolvedBy User?    @relation("AlertResolvedBy", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([caseId])
+  @@index([status])
+  @@index([alertType])
+  @@map("alerts")
+}
+
+model TatSnapshot {
+  id          String    @id @default(uuid()) @db.Uuid
+  caseId      String    @map("case_id") @db.Uuid
+  elapsedDays Int       @map("elapsed_days")
+  tatStatus   TatStatus @map("tat_status")
+  checkedAt   DateTime  @default(now()) @map("checked_at")
+
+  case BgvCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@index([tatStatus])
+  @@map("tat_snapshots")
+}
+
+/**
+ * DPDP / CONSENT / RETENTION
+ */
+
+model ConsentRecord {
+  id                 String        @id @default(uuid()) @db.Uuid
+  tenantId           String        @map("tenant_id") @db.Uuid
+  candidateProfileId String?       @map("candidate_profile_id") @db.Uuid
+  caseId             String?       @map("case_id") @db.Uuid
+  consentFileId      String?       @map("consent_file_id") @db.Uuid
+  consentType        ConsentType   @map("consent_type")
+  status             ConsentStatus @default(PENDING)
+  capturedById       String?       @map("captured_by") @db.Uuid
+  capturedAt         DateTime?     @map("captured_at")
+  revokedAt          DateTime?     @map("revoked_at")
+  notes              String?
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  candidateProfile CandidateProfile? @relation(fields: [candidateProfileId], references: [id], onDelete: SetNull)
+  case             BgvCase?          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  consentFile      CaseFile?         @relation("ConsentDocumentFile", fields: [consentFileId], references: [id], onDelete: SetNull)
+  capturedBy       User?             @relation("ConsentCapturedBy", fields: [capturedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([caseId])
+  @@index([status])
+  @@map("consent_records")
+}
+
+model DataPrincipalRequest {
+  id                 String                     @id @default(uuid()) @db.Uuid
+  tenantId           String                     @map("tenant_id") @db.Uuid
+  candidateProfileId String?                    @map("candidate_profile_id") @db.Uuid
+  caseId             String?                    @map("case_id") @db.Uuid
+  requestType        DataPrincipalRequestType   @map("request_type")
+  status             DataPrincipalRequestStatus @default(RECEIVED)
+  requesterName      String?                    @map("requester_name")
+  requesterContact   String?                    @map("requester_contact")
+  requestDetails     String?                    @map("request_details")
+  responseNotes      String?                    @map("response_notes")
+  processedById      String?                    @map("processed_by") @db.Uuid
+  requestedAt        DateTime                   @default(now()) @map("requested_at")
+  dueAt              DateTime?                  @map("due_at")
+  completedAt        DateTime?                  @map("completed_at")
+
+  tenant           Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  candidateProfile CandidateProfile? @relation(fields: [candidateProfileId], references: [id], onDelete: SetNull)
+  case             BgvCase?          @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  processedBy      User?             @relation("DprProcessedBy", fields: [processedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([caseId])
+  @@index([status])
+  @@map("data_principal_requests")
+}
+
+model RetentionPolicy {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @map("tenant_id") @db.Uuid
+  name          String
+  caseType      CaseType? @map("case_type")
+  retentionDays Int       @map("retention_days")
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  retentionActions RetentionAction[]
+
+  @@index([tenantId])
+  @@index([caseType])
+  @@map("retention_policies")
+}
+
+model RetentionAction {
+  id           String                @id @default(uuid()) @db.Uuid
+  caseId       String                @map("case_id") @db.Uuid
+  policyId     String?               @map("policy_id") @db.Uuid
+  actionType   RetentionActionType   @map("action_type")
+  status       RetentionActionStatus @default(PENDING)
+  executedById String?               @map("executed_by") @db.Uuid
+  executedAt   DateTime?             @map("executed_at")
+  errorMessage String?               @map("error_message")
+  createdAt    DateTime              @default(now()) @map("created_at")
+
+  case       BgvCase          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  policy     RetentionPolicy? @relation(fields: [policyId], references: [id], onDelete: SetNull)
+  executedBy User?            @relation("RetentionActionExecutedBy", fields: [executedById], references: [id], onDelete: SetNull)
+
+  @@index([caseId])
+  @@index([status])
+  @@map("retention_actions")
+}
+
+/**
+ * AUDIT LOGS
+ */
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String?  @map("tenant_id") @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  caseId     String?  @map("case_id") @db.Uuid
+  action     String
+  entityType String?  @map("entity_type")
+  entityId   String?  @map("entity_id")
+  metadata   Json?
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  tenant Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  user   User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  case   BgvCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([caseId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

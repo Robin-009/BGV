@@ -1,0 +1,6 @@
+mistralai
+python-dotenv
+pydantic
+fastapi
+uvicorn[standard]
+python-multipart
