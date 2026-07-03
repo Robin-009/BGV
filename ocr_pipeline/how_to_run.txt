@@ -1,0 +1,5 @@
+Bash this cmd in terminal ---->  uvicorn ocr_pipeline.main:app --reload --port 8080
+
+Open link to swaggerUI and check end points
+
+Cases of error: Document normalization error , can be resolved in backend if not supported in frontend.
