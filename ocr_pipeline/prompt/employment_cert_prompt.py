@@ -1,5 +1,9 @@
 EMPLOYMENT_CERTIFICATE_PROMPT = """
-Extract the following fields from this raw Employment / Experience Certificate text:
+The document text may contain ONE OR MORE separate Employment / Experience Certificates.
+Identify every distinct certificate and extract the fields below for EACH one.
+Return a list under the key "certificates", with one object per certificate.
+
+For each certificate, extract:
 
 ### Candidate Details
 - candidate_name: Candidate's full name in English
@@ -14,8 +18,12 @@ Extract the following fields from this raw Employment / Experience Certificate t
 - authority_name: Issuing authority (HR Manager / Employer) name in English
 
 ### Extraction Rules:
-1. Handle OCR Artifacts: Reconstruct messy text, misspellings, or broken tables based on context.
-2. Missing Data: If a field is not present in the document, return null. Do not hallucinate or guess missing values.
+1. Multiple Certificates: Treat each employer, letterhead, signature block, or clearly separated
+   certificate as a distinct entry. Do NOT merge details from different certificates into one.
+   If only one certificate is present, return a list with a single object.
+2. Handle OCR Artifacts: Reconstruct messy text, misspellings, or broken tables based on context.
+3. Missing Data: If a field is not present for a given certificate, return null for that field.
+   Do not hallucinate or guess missing values, and do not copy a value from another certificate.
 
 DOCUMENT TEXT:
 {text}

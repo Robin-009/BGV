@@ -7,7 +7,7 @@ from ocr_pipeline.schema.driving_licence_schema import DrivingLicence
 from ocr_pipeline.schema.marriage import MarriageRecord
 from ocr_pipeline.schema.pan_card_schema import PanCard
 from ocr_pipeline.schema.passport import PassportRecord
-from ocr_pipeline.schema.employment_cert import EmploymentCertificate
+from ocr_pipeline.schema.employment_cert import EmploymentCertificateList, EmploymentCertificate
 from ocr_pipeline.schema.tenth_marksheet_schema import TenthMarksheet
 from ocr_pipeline.schema.transfer_certificate import TransferCertificate
 from ocr_pipeline.schema.twelfth_marksheet_schema import TwelfthMarksheet
@@ -26,7 +26,7 @@ SCHEMA_MAP: Dict[str, Type[BaseModel]] = {
     "marriage": MarriageRecord,
     "pan_card": PanCard,
     "passport": PassportRecord,
-    "employment_certificate": EmploymentCertificate,
+    "employment_certificate": EmploymentCertificateList,
     "tenth_marksheet": TenthMarksheet,
     "transfer_certificate": TransferCertificate,
     "twelfth_marksheet": TwelfthMarksheet,

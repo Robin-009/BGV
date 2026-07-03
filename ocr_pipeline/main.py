@@ -18,12 +18,40 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 pipeline = OCRPipeline()
 
-# @app.get("/")
-# async def root():
-#     return {"message": "API is running"}
+def normalize_doc_types(raw_doc_types: Any) -> List[str]:
+    if not isinstance(raw_doc_types, list):
+        raise ValueError("doc_types must be a JSON array list.")
+
+    normalized: List[str] = []
+    for item in raw_doc_types:
+        if isinstance(item, str):
+            doc_type = item.strip()
+        elif isinstance(item, dict):
+            doc_type = (
+                item.get("value")
+                or item.get("doc_type")
+                or item.get("name")
+                or item.get("key")
+                or ""
+            ).strip()
+        else:
+            doc_type = str(item).strip() if item is not None else ""
+
+        if doc_type:
+            normalized.append(doc_type)
+
+    if not normalized:
+        raise ValueError("doc_types must contain at least one valid document type.")
+
+    return normalized
+
+
 @app.get("/")
-async def read_index():
-    return FileResponse(os.path.join(static_dir, "index.html"))
+async def root():
+    return {"message": "API is running"}
+# @app.get("/")
+# async def read_index():
+#     return FileResponse(os.path.join(static_dir, "index.html"))
 
 @app.get("/schemas", response_model=List[str])
 def list_available_schemas():
@@ -47,9 +75,7 @@ async def extract_document(
 
     try:
         # Parse the incoming JSON string array from the frontend form
-        parsed_doc_types = json.loads(doc_types)
-        if not isinstance(parsed_doc_types, list) or len(parsed_doc_types) == 0:
-            raise ValueError("doc_types must be a non-empty JSON array list.")
+        parsed_doc_types = normalize_doc_types(json.loads(doc_types))
 
         content = await file.read()
         structured_data, raw_text = pipeline.process(content, parsed_doc_types)
