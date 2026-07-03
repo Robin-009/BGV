@@ -18,9 +18,12 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 pipeline = OCRPipeline()
 
+# @app.get("/")
+# async def root():
+#     return {"message": "API is running"}
 @app.get("/")
-async def root():
-    return {"message": "API is running"}
+async def read_index():
+    return FileResponse(os.path.join(static_dir, "index.html"))
 
 @app.get("/schemas", response_model=List[str])
 def list_available_schemas():
