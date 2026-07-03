@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 
 
@@ -11,3 +11,10 @@ class EmploymentCertificate(BaseModel):
     period_of_employment: Optional[str] = Field(None, description="Period of employment in English (DD Month YYYY – DD Month YYYY)")
     designation: Optional[str] = Field(None, description="Employee's designation in English")
     authority_name: Optional[str] = Field(None, description="Issuing authority (HR Manager / Employer) name in English")
+
+
+class EmploymentCertificateList(BaseModel):
+    certificates: List[EmploymentCertificate] = Field(
+        default_factory=list,
+        description="One entry per distinct employment/experience certificate found in the document text",
+    )

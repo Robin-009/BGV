@@ -14,7 +14,10 @@
       }
 
       body {
-        font-family: "Inter", -apple-system, sans-serif;
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
         background-color: var(--bg);
         color: var(--text);
         margin: 0;
@@ -189,7 +192,7 @@
         background: #fff;
         border: 1px solid var(--border);
         border-radius: 4px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         z-index: 1000;
         max-height: 200px;
         overflow-y: auto;
@@ -254,8 +257,12 @@
       }
 
       @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
       }
 
       #status-msg {
@@ -272,8 +279,7 @@
       <div class="upload-controls">
         <div class="multiselect-dropdown" id="custom-dropdown">
           <div class="dropdown-anchor" id="dropdown-anchor">Select Schemas</div>
-          <div class="dropdown-menu" id="dropdown-menu">
-            </div>
+          <div class="dropdown-menu" id="dropdown-menu"></div>
         </div>
 
         <input type="file" id="file-input" accept="application/pdf,image/*" />
@@ -318,7 +324,7 @@
       const dropdownWrapper = document.getElementById("custom-dropdown");
       const dropdownAnchor = document.getElementById("dropdown-anchor");
       const dropdownMenu = document.getElementById("dropdown-menu");
-      
+
       const fileInput = document.getElementById("file-input");
       const extractBtn = document.getElementById("extract-btn");
       const viewer = document.getElementById("viewer");
@@ -360,7 +366,9 @@
             checkbox.onchange = () => handleCheckboxSelection();
 
             label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(s.replace(/_/g, " ").toUpperCase()));
+            label.appendChild(
+              document.createTextNode(s.replace(/_/g, " ").toUpperCase()),
+            );
             dropdownMenu.appendChild(label);
 
             // Pre-tick the first available schema by default
@@ -372,38 +380,44 @@
         });
 
       function getSelectedSchemas() {
-        return Array.from(document.querySelectorAll(".schema-checkbox:checked")).map(cb => cb.value);
+        return Array.from(
+          document.querySelectorAll(".schema-checkbox:checked"),
+        ).map((cb) => cb.value);
       }
 
       function handleCheckboxSelection() {
         const selected = getSelectedSchemas();
-        
+
         // Update selection text preview anchor
         if (selected.length === 0) {
           dropdownAnchor.textContent = "Select Schemas";
         } else if (selected.length <= 2) {
-          dropdownAnchor.textContent = selected.map(s => s.replace(/_/g, " ").toUpperCase()).join(", ");
+          dropdownAnchor.textContent = selected
+            .map((s) => s.replace(/_/g, " ").toUpperCase())
+            .join(", ");
         } else {
           dropdownAnchor.textContent = `${selected.length} Schemas Selected`;
         }
-        
+
         loadMultipleSchemaFields(selected);
       }
 
       async function loadMultipleSchemaFields(docTypes) {
         if (docTypes.length === 0) {
-          resultContainer.innerHTML = '<p style="color: #6c757d; font-style: italic;">Tick a schema from the dropdown...</p>';
+          resultContainer.innerHTML =
+            '<p style="color: #6c757d; font-style: italic;">Tick a schema from the dropdown...</p>';
           return;
         }
         try {
           currentResult = {};
           resultContainer.innerHTML = "";
-          
+
           for (const docType of docTypes) {
             const response = await fetch(`/schema-fields/${docType}`);
-            if (!response.ok) throw new Error(`Failed to load fields for ${docType}`);
+            if (!response.ok)
+              throw new Error(`Failed to load fields for ${docType}`);
             const fields = await response.json();
-            
+
             appendEmptySchemaSection(docType, fields);
           }
         } catch (err) {
@@ -414,7 +428,7 @@
 
       function appendEmptySchemaSection(docType, fields) {
         currentResult[docType] = {};
-        
+
         const title = document.createElement("div");
         title.className = "schema-section-title";
         title.textContent = docType.replace(/_/g, " ");
@@ -441,6 +455,29 @@
           group.appendChild(input);
           resultContainer.appendChild(group);
         });
+      }
+
+      function formatFieldValue(value) {
+        if (value === null || value === undefined) return "";
+        if (typeof value === "object") {
+          return JSON.stringify(value, null, 2);
+        }
+        return String(value);
+      }
+
+      function updateCurrentResultValue(schemaKey, key, rawValue) {
+        if (!currentResult[schemaKey]) currentResult[schemaKey] = {};
+
+        if (!rawValue) {
+          currentResult[schemaKey][key] = rawValue;
+          return;
+        }
+
+        try {
+          currentResult[schemaKey][key] = JSON.parse(rawValue);
+        } catch {
+          currentResult[schemaKey][key] = rawValue;
+        }
       }
 
       // Preview logic
@@ -476,14 +513,31 @@
           return;
         }
 
+        const normalizedDocTypes = selectedDocTypes
+          .map((docType) => {
+            if (typeof docType === "string") return docType;
+            if (docType && typeof docType === "object") {
+              return (
+                docType.value ||
+                docType.doc_type ||
+                docType.name ||
+                docType.key ||
+                ""
+              );
+            }
+            return "";
+          })
+          .filter(Boolean);
+
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("doc_types", JSON.stringify(selectedDocTypes));
+        formData.append("doc_types", JSON.stringify(normalizedDocTypes));
 
         extractBtn.disabled = true;
         loader.style.display = "inline-block";
         statusMsg.textContent = "Processing...";
-        resultContainer.innerHTML = "<p>Analyzing document against ticked structures...</p>";
+        resultContainer.innerHTML =
+          "<p>Analyzing document against ticked structures...</p>";
 
         try {
           const response = await fetch("/extract", {
@@ -511,7 +565,7 @@
 
       function displayMultiResults(data) {
         resultContainer.innerHTML = "";
-        
+
         for (const [schemaKey, schemaData] of Object.entries(data)) {
           const title = document.createElement("div");
           title.className = "schema-section-title";
@@ -526,18 +580,26 @@
             label.className = "field-label";
             label.textContent = key.replace(/_/g, " ");
 
-            const input = document.createElement("input");
-            input.className = "field-input";
-            input.value = value || "";
-            input.placeholder = "N/A";
+            const isComplexValue =
+              Array.isArray(value) || typeof value === "object";
+            const fieldEditor = document.createElement(
+              isComplexValue ? "textarea" : "input",
+            );
+            fieldEditor.className = "field-input";
+            fieldEditor.value = formatFieldValue(value);
+            fieldEditor.placeholder = "N/A";
 
-            input.oninput = (e) => {
-              if (!currentResult[schemaKey]) currentResult[schemaKey] = {};
-              currentResult[schemaKey][key] = e.target.value;
+            if (isComplexValue) {
+              fieldEditor.rows = 4;
+              fieldEditor.style.fontFamily = "monospace";
+            }
+
+            fieldEditor.oninput = (e) => {
+              updateCurrentResultValue(schemaKey, key, e.target.value);
             };
 
             group.appendChild(label);
-            group.appendChild(input);
+            group.appendChild(fieldEditor);
             resultContainer.appendChild(group);
           }
         }
