@@ -18,7 +18,8 @@ const updateVisitSchema = z.object({
   notes:              z.string().max(2000).optional(),
   verificationMode:   z.enum(['verbal', 'physical', 'both']).optional(),
   verificationStatus: z.string().max(100).optional(),
-  groundObservations: z.record(z.string(), z.string()).optional(),
+  groundObservations: z.record(z.string(), z.union([z.string(), z.null()])).optional(),
+  fieldValues:        z.record(z.string(), z.string()).optional(),
 });
 
 const listVisitsQuerySchema = z.object({

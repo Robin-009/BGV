@@ -23,6 +23,15 @@ const getById = async (req, res, next) => {
   }
 };
 
+const getFullDetail = async (req, res, next) => {
+  try {
+    const data = await casesService.getFullCase(req.params.id, req.tenantId);
+    success(res, data);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const create = async (req, res, next) => {
   try {
     const bgvCase = await casesService.createCase({ tenantId: req.tenantId, ...req.body });
@@ -70,14 +79,14 @@ const uploadFiles = async (req, res, next) => {
 
     const caseId     = req.params.id;
     const uploadedBy = req.body.uploadedById ?? null;
-    const fileKind   = req.body.fileKind     ?? 'ORIGINAL_PDF';
+    const fileKind   = req.query.kind || req.body.fileKind || 'ORIGINAL_PDF';
 
     // Ensure the case belongs to this tenant
     await casesService.getCaseById(caseId, req.tenantId);
 
     const saved = await Promise.all(
       req.files.map((file) => {
-        const relativePath = storage.buildRelativePath(caseId, file.filename);
+        const relativePath = storage.buildRelativePath(caseId, file.filename, fileKind);
         return casesService.addCaseFile({
           caseId,
           uploadedById:  uploadedBy,
@@ -139,4 +148,16 @@ const saveCoordinatorRemarks = async (req, res, next) => {
   }
 };
 
-module.exports = { list, getById, create, update, updateStatus, listFiles, uploadFiles, deleteFile, updateFileMeta, getComparison, saveCoordinatorRemarks };
+const mdSign = async (req, res, next) => {
+  try {
+    const result = await casesService.mdSignCase(req.params.id, req.tenantId, {
+      signedBy: req.body.signedBy || 'MD',
+      remarks:  req.body.remarks  || null,
+    });
+    success(res, result, 'Case MD signed successfully');
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { list, getById, getFullDetail, create, update, updateStatus, listFiles, uploadFiles, deleteFile, updateFileMeta, getComparison, saveCoordinatorRemarks, mdSign };

@@ -4,7 +4,7 @@ const CaseType = z.enum(['DRIVER_BGV', 'EMBASSY_BGV_1', 'EMBASSY_BGV_2', 'CORPOR
 
 const CaseStatus = z.enum([
   'CREATED', 'OCR_PENDING', 'OCR_IN_PROGRESS', 'OCR_COMPLETED',
-  'FIELD_ASSIGNED', 'FIELD_IN_PROGRESS', 'FIELD_SUBMITTED',
+  'MD_SIGNED', 'FIELD_ASSIGNED', 'FIELD_IN_PROGRESS', 'FIELD_SUBMITTED',
   'UNDER_REVIEW', 'REPORT_DRAFT', 'QC_PENDING', 'QC_COMPLETED',
   'REPORT_APPROVED', 'FINAL', 'REJECTED', 'ERROR', 'ARCHIVED',
 ]);
@@ -31,7 +31,7 @@ const updateCaseSchema = z.object({
 });
 
 const updateStatusSchema = z.object({
-  status:  CaseStatus,
+  status:  z.enum(['CREATED','OCR_PENDING','OCR_IN_PROGRESS','OCR_COMPLETED','MD_SIGNED','FIELD_ASSIGNED','FIELD_IN_PROGRESS','FIELD_SUBMITTED','UNDER_REVIEW','REPORT_DRAFT','QC_PENDING','QC_COMPLETED','REPORT_APPROVED','FINAL','REJECTED','ERROR','ARCHIVED']),
   remarks: z.string().optional(),
 });
 
@@ -44,8 +44,9 @@ const listCasesQuerySchema = z.object({
   }).pipe(z.array(CaseStatus).optional()),
   caseType:   CaseType.optional(),
   search:     z.string().optional(),
-  fromDate:   z.string().optional(),
-  toDate:     z.string().optional(),
+  fromDate:         z.string().optional(),
+  toDate:           z.string().optional(),
+  pendingMdReview:  z.coerce.boolean().optional(),
 });
 
 module.exports = {

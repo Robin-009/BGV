@@ -18,6 +18,8 @@ const DOC_TYPE_KEY = {
   'Aadhaar Card':                       'aadhaar',
   'PAN Card':                           'pan_card',
   'Bank Statement':                     'bank_statement',
+  'Curriculum Vitae (CV)':              'cv_bgv',
+  'Transfer Certificate':               'transfer_certificate',
 };
 
 // Maps Python snake_case keys → frontend display field names
@@ -25,82 +27,142 @@ const FIELD_LABELS = {
   birth_certificate: {
     child_name_eng:      'Candidate Name',
     child_name_org:      'Name (Regional)',
-    gender_eng:          'Gender',
-    date_of_birth_eng:   'Date Of Birth',
-    place_of_birth_eng:  'Place Of Birth',
-    father_name_eng:     "Father's Name",
-    mother_name_eng:     "Mother's Name",
-    parents_address_eng: 'Address',
+    gender:              'Gender',
+    date_of_birth:       'Date Of Birth',
+    place_of_birth:      'Place Of Birth',
+    registration_number: 'Registration No.',
+    father_name:         "Father's Name",
+    mother_name:         "Mother's Name",
+    parents_address:     'Address',
   },
   employment_verification: {
     candidate_name:    'Candidate Name',
     designation:       'Designation',
-    organisation_name: 'Organisation Name',
-    // period_from + period_to → combined below
+    employee_id:       'Employee ID',
+    company_name:      'Company Name',
+    company_address:   'Company Address',
+    company_telephone: 'Company Telephone',
+    authority_name:    'Issuing Authority',
+    // period_from + period_to → combined in mapExtracted
   },
   marriage_certificate: {
-    candidate_name:    'Candidate Name',
-    spouse_name:       "Spouse's Name",
-    place_of_marriage: 'Place of Marriage',
-    date_of_marriage:  'Date of Marriage',
-    registration_no:   'Registration No.',
+    spouse1_name:         'Spouse 1 Name',
+    spouse2_name:         'Spouse 2 Name',
+    date_of_marriage:     'Date of Marriage',
+    place_of_marriage:    'Place of Marriage',
+    certificate_number:   'Certificate No.',
+    date_of_registration: 'Date of Registration',
+    registrar_office:     'Registrar Office',
+    office_address:       'Office Address',
+    // witnesses → array, handled in mapExtracted
   },
   affidavit: {
     candidate_name:  'Candidate Name',
     registration_no: 'Registration No.',
+    notary_name:     'Notary Name',
     date:            'Date',
+    place:           'Place',
+    subject:         'Subject',
   },
   education_certificate: {
     candidate_name:     'Candidate Name',
     examination_passed: 'Examination Passed',
     roll_no:            'Roll No.',
     institution:        'Institution',
+    board_university:   'Board / University',
     year_of_passing:    'Year of Passing',
+    percentage_grade:   'Percentage / Grade',
+    specialisation:     'Specialisation',
   },
   passport: {
-    candidate_name: 'Candidate Name',
-    passport_no:    'Passport No.',
-    date_of_birth:  'Date Of Birth',
-    issue_date:     'Issue Date',
-    expiry_date:    'Expiry Date',
-    nationality:    'Nationality',
+    passport_number: 'Passport No.',
+    country_code:    'Country Code',
+    nationality:     'Nationality',
+    surname:         'Surname',
+    given_name:      'Given Name',
+    gender:          'Gender',
+    date_of_birth:   'Date Of Birth',
+    place_of_birth:  'Place of Birth',
+    father_name:     "Father's Name",
+    mother_name:     "Mother's Name",
+    spouse_name:     "Spouse's Name",
+    date_of_issue:   'Date of Issue',
+    date_of_expiry:  'Date of Expiry',
+    place_of_issue:  'Place of Issue',
+    file_number:     'File No.',
+    address:         'Address',
   },
   driving_license: {
     candidate_name: 'Candidate Name',
     license_no:     'License No.',
     date_of_birth:  'Date Of Birth',
+    father_name:    "Father's Name",
+    blood_group:    'Blood Group',
     issue_date:     'Issue Date',
     expiry_date:    'Expiry Date',
     vehicle_class:  'Vehicle Class',
+    issuing_rto:    'Issuing RTO',
     address:        'Address',
   },
   voter_id: {
     candidate_name:      'Candidate Name',
     voter_id_no:         'Voter ID No.',
     date_of_birth:       'Date Of Birth',
-    father_husband_name: "Father's/Husband's Name",
+    gender:              'Gender',
+    father_husband_name: "Father's / Husband's Name",
     address:             'Address',
     constituency:        'Constituency',
+    part_number:         'Part Number',
   },
   aadhaar: {
     candidate_name: 'Candidate Name',
     aadhaar_no:     'Aadhaar No.',
     date_of_birth:  'Date Of Birth',
     gender:         'Gender',
+    father_name:    "Father's Name",
     address:        'Address',
+    vid:            'VID',
   },
   pan_card: {
     candidate_name: 'Candidate Name',
     pan_no:         'PAN No.',
     date_of_birth:  'Date Of Birth',
     father_name:    "Father's Name",
+    entity_type:    'Entity Type',
   },
   bank_statement: {
-    account_holder_name: 'Candidate Name',
+    account_holder_name: 'Account Holder',
     bank_name:           'Bank Name',
+    branch_name:         'Branch',
     account_no:          'Account No.',
+    account_type:        'Account Type',
     ifsc_code:           'IFSC Code',
-    // period_from + period_to → combined below
+    opening_balance:     'Opening Balance',
+    closing_balance:     'Closing Balance',
+    // period_from + period_to → combined in mapExtracted
+  },
+  cv_bgv: {
+    full_name:    'Full Name',
+    father_name:  "Father's Name",
+    mother_name:  "Mother's Name",
+    spouse_name:  "Spouse's Name",
+    date_of_birth:'Date Of Birth',
+    nationality:  'Nationality',
+    phone_number: 'Phone Number',
+    // criminal_record_declaration → boolean, handled in mapExtracted
+    // addresses, references, identity_proofs, court_cases → arrays, handled in mapExtracted
+  },
+  transfer_certificate: {
+    candidate_name: 'Candidate Name',
+    father_name:    "Father's Name",
+    mother_name:    "Mother's Name",
+    date_of_birth:  'Date Of Birth',
+    school_name:    'School Name',
+    school_address: 'School Address',
+    date_of_leaving:'Date of Leaving',
+    roll_number:    'Roll / Admission No.',
+    reason_leaving: 'Reason for Leaving',
+    conduct:        'Conduct',
   },
 };
 
@@ -110,6 +172,8 @@ function mapExtracted(docTypeKey, raw) {
 
   for (const [pyKey, val] of Object.entries(raw)) {
     if (val === null || val === undefined || val === '') continue;
+    // Skip arrays and objects here — handled separately below
+    if (typeof val === 'object') continue;
     const label = labelMap[pyKey];
     if (label) out[label] = val;
   }
@@ -126,6 +190,22 @@ function mapExtracted(docTypeKey, raw) {
     const from = raw.period_from || '';
     const to   = raw.period_to   || '';
     if (from || to) out['Statement Period'] = to ? `${from} - ${to}` : from;
+  }
+
+  // CV boolean field
+  if (docTypeKey === 'cv_bgv') {
+    if (raw.criminal_record_declaration !== null && raw.criminal_record_declaration !== undefined) {
+      out['Criminal Record Declaration'] = raw.criminal_record_declaration ? 'Yes' : 'No';
+    }
+    if (Array.isArray(raw.addresses) && raw.addresses.length) out['Addresses'] = raw.addresses;
+    if (Array.isArray(raw.references) && raw.references.length) out['References'] = raw.references;
+    if (Array.isArray(raw.identity_proofs) && raw.identity_proofs.length) out['Identity Proofs'] = raw.identity_proofs;
+    if (Array.isArray(raw.court_cases) && raw.court_cases.length) out['Court Cases'] = raw.court_cases;
+  }
+
+  // Marriage witnesses array
+  if (docTypeKey === 'marriage_certificate') {
+    if (Array.isArray(raw.witnesses) && raw.witnesses.length) out['Witnesses'] = raw.witnesses;
   }
 
   return out;

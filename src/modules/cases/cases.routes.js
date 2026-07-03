@@ -18,10 +18,12 @@ const { createAssignmentSchema } = require('../fieldAssignments/fieldAssignments
 
 const router = Router();
 
-// Multer: saves files to uploads/cases/:id/ on local disk
+// Multer: saves files to uploads/cases/:id/:kind/ on local disk
+// fileKind passed as query param (?kind=ORIGINAL_PDF) so it's available before body parsing
 const diskStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = storage.buildCaseDir(req.params.id);
+    const kind = req.query.kind || req.body?.fileKind || 'ORIGINAL_PDF';
+    const dir  = storage.buildCaseDir(req.params.id, kind);
     storage.ensureDir(dir);
     cb(null, dir);
   },
@@ -34,19 +36,28 @@ const diskStorage = multer.diskStorage({
 
 const upload = multer({
   storage: diskStorage,
-  limits:  { fileSize: 20 * 1024 * 1024 }, // 20 MB per file
+  limits:  { fileSize: 20 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    const allowed = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
     if (allowed.includes(file.mimetype)) return cb(null, true);
     cb(new Error(`Unsupported file type: ${file.mimetype}`));
   },
 });
+
+const uploadAny = multer({ storage: diskStorage, limits: { fileSize: 20 * 1024 * 1024 } });
 
 router.use(resolveTenant);
 
 // Case CRUD
 router.get( '/',                     validateQuery(listCasesQuerySchema), casesController.list);
 router.get( '/:id',                                                       casesController.getById);
+router.get( '/:id/full',                                                  casesController.getFullDetail);
 router.post('/',                     validate(createCaseSchema),          casesController.create);
 router.put( '/:id',                  validate(updateCaseSchema),          casesController.update);
 router.patch('/:id/status',          validate(updateStatusSchema),        casesController.updateStatus);
@@ -56,6 +67,9 @@ router.get(   '/:id/files',                                               casesC
 router.post(  '/:id/files',          upload.array('files', 10),           casesController.uploadFiles);
 router.patch( '/:id/files/:fileId',                                       casesController.updateFileMeta);
 router.delete('/:id/files/:fileId',                                       casesController.deleteFile);
+
+// MD sign-off
+router.post( '/:id/md-sign', casesController.mdSign);
 
 // Comparison hub
 router.get(  '/:id/comparison',          casesController.getComparison);

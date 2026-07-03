@@ -233,6 +233,7 @@ exports.Prisma.CaseFileScalarFieldEnum = {
   caseId: 'caseId',
   uploadedById: 'uploadedById',
   fileKind: 'fileKind',
+  docStatus: 'docStatus',
   storageProvider: 'storageProvider',
   filePath: 'filePath',
   fileName: 'fileName',
@@ -560,6 +561,7 @@ exports.CaseStatus = exports.$Enums.CaseStatus = {
   OCR_PENDING: 'OCR_PENDING',
   OCR_IN_PROGRESS: 'OCR_IN_PROGRESS',
   OCR_COMPLETED: 'OCR_COMPLETED',
+  MD_SIGNED: 'MD_SIGNED',
   FIELD_ASSIGNED: 'FIELD_ASSIGNED',
   FIELD_IN_PROGRESS: 'FIELD_IN_PROGRESS',
   FIELD_SUBMITTED: 'FIELD_SUBMITTED',
@@ -608,8 +610,20 @@ exports.FileKind = exports.$Enums.FileKind = {
   EVIDENCE_PHOTO: 'EVIDENCE_PHOTO',
   EVIDENCE_VIDEO: 'EVIDENCE_VIDEO',
   REPORT_PDF: 'REPORT_PDF',
+  MD_SIGNOFF_LETTER: 'MD_SIGNOFF_LETTER',
   CONSENT_DOCUMENT: 'CONSENT_DOCUMENT',
   OTHER: 'OTHER'
+};
+
+exports.DocStatus = exports.$Enums.DocStatus = {
+  UPLOADED: 'UPLOADED',
+  OCR_PENDING: 'OCR_PENDING',
+  OCR_DONE: 'OCR_DONE',
+  DATA_EXTRACTED: 'DATA_EXTRACTED',
+  MD_SIGNED: 'MD_SIGNED',
+  FE_VERIFIED: 'FE_VERIFIED',
+  DISCREPANCY: 'DISCREPANCY',
+  APPROVED: 'APPROVED'
 };
 
 exports.StorageProvider = exports.$Enums.StorageProvider = {

@@ -185,6 +185,7 @@ export const CaseStatus: {
   OCR_PENDING: 'OCR_PENDING',
   OCR_IN_PROGRESS: 'OCR_IN_PROGRESS',
   OCR_COMPLETED: 'OCR_COMPLETED',
+  MD_SIGNED: 'MD_SIGNED',
   FIELD_ASSIGNED: 'FIELD_ASSIGNED',
   FIELD_IN_PROGRESS: 'FIELD_IN_PROGRESS',
   FIELD_SUBMITTED: 'FIELD_SUBMITTED',
@@ -309,11 +310,26 @@ export const FileKind: {
   EVIDENCE_PHOTO: 'EVIDENCE_PHOTO',
   EVIDENCE_VIDEO: 'EVIDENCE_VIDEO',
   REPORT_PDF: 'REPORT_PDF',
+  MD_SIGNOFF_LETTER: 'MD_SIGNOFF_LETTER',
   CONSENT_DOCUMENT: 'CONSENT_DOCUMENT',
   OTHER: 'OTHER'
 };
 
 export type FileKind = (typeof FileKind)[keyof typeof FileKind]
+
+
+export const DocStatus: {
+  UPLOADED: 'UPLOADED',
+  OCR_PENDING: 'OCR_PENDING',
+  OCR_DONE: 'OCR_DONE',
+  DATA_EXTRACTED: 'DATA_EXTRACTED',
+  MD_SIGNED: 'MD_SIGNED',
+  FE_VERIFIED: 'FE_VERIFIED',
+  DISCREPANCY: 'DISCREPANCY',
+  APPROVED: 'APPROVED'
+};
+
+export type DocStatus = (typeof DocStatus)[keyof typeof DocStatus]
 
 
 export const StorageProvider: {
@@ -535,6 +551,10 @@ export const DocCollectionStatus: typeof $Enums.DocCollectionStatus
 export type FileKind = $Enums.FileKind
 
 export const FileKind: typeof $Enums.FileKind
+
+export type DocStatus = $Enums.DocStatus
+
+export const DocStatus: typeof $Enums.DocStatus
 
 export type StorageProvider = $Enums.StorageProvider
 
@@ -15542,6 +15562,7 @@ export namespace Prisma {
     caseId: string | null
     uploadedById: string | null
     fileKind: $Enums.FileKind | null
+    docStatus: $Enums.DocStatus | null
     storageProvider: $Enums.StorageProvider | null
     filePath: string | null
     fileName: string | null
@@ -15557,6 +15578,7 @@ export namespace Prisma {
     caseId: string | null
     uploadedById: string | null
     fileKind: $Enums.FileKind | null
+    docStatus: $Enums.DocStatus | null
     storageProvider: $Enums.StorageProvider | null
     filePath: string | null
     fileName: string | null
@@ -15572,6 +15594,7 @@ export namespace Prisma {
     caseId: number
     uploadedById: number
     fileKind: number
+    docStatus: number
     storageProvider: number
     filePath: number
     fileName: number
@@ -15598,6 +15621,7 @@ export namespace Prisma {
     caseId?: true
     uploadedById?: true
     fileKind?: true
+    docStatus?: true
     storageProvider?: true
     filePath?: true
     fileName?: true
@@ -15613,6 +15637,7 @@ export namespace Prisma {
     caseId?: true
     uploadedById?: true
     fileKind?: true
+    docStatus?: true
     storageProvider?: true
     filePath?: true
     fileName?: true
@@ -15628,6 +15653,7 @@ export namespace Prisma {
     caseId?: true
     uploadedById?: true
     fileKind?: true
+    docStatus?: true
     storageProvider?: true
     filePath?: true
     fileName?: true
@@ -15731,6 +15757,7 @@ export namespace Prisma {
     caseId: string
     uploadedById: string | null
     fileKind: $Enums.FileKind
+    docStatus: $Enums.DocStatus
     storageProvider: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -15766,6 +15793,7 @@ export namespace Prisma {
     caseId?: boolean
     uploadedById?: boolean
     fileKind?: boolean
+    docStatus?: boolean
     storageProvider?: boolean
     filePath?: boolean
     fileName?: boolean
@@ -15788,6 +15816,7 @@ export namespace Prisma {
     caseId?: boolean
     uploadedById?: boolean
     fileKind?: boolean
+    docStatus?: boolean
     storageProvider?: boolean
     filePath?: boolean
     fileName?: boolean
@@ -15806,6 +15835,7 @@ export namespace Prisma {
     caseId?: boolean
     uploadedById?: boolean
     fileKind?: boolean
+    docStatus?: boolean
     storageProvider?: boolean
     filePath?: boolean
     fileName?: boolean
@@ -15824,6 +15854,7 @@ export namespace Prisma {
     caseId?: boolean
     uploadedById?: boolean
     fileKind?: boolean
+    docStatus?: boolean
     storageProvider?: boolean
     filePath?: boolean
     fileName?: boolean
@@ -15835,7 +15866,7 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type CaseFileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "caseId" | "uploadedById" | "fileKind" | "storageProvider" | "filePath" | "fileName" | "originalName" | "mimeType" | "fileSizeKb" | "checksum" | "metadata" | "createdAt", ExtArgs["result"]["caseFile"]>
+  export type CaseFileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "caseId" | "uploadedById" | "fileKind" | "docStatus" | "storageProvider" | "filePath" | "fileName" | "originalName" | "mimeType" | "fileSizeKb" | "checksum" | "metadata" | "createdAt", ExtArgs["result"]["caseFile"]>
   export type CaseFileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     case?: boolean | BgvCaseDefaultArgs<ExtArgs>
     uploadedBy?: boolean | CaseFile$uploadedByArgs<ExtArgs>
@@ -15867,6 +15898,7 @@ export namespace Prisma {
       caseId: string
       uploadedById: string | null
       fileKind: $Enums.FileKind
+      docStatus: $Enums.DocStatus
       storageProvider: $Enums.StorageProvider
       filePath: string
       fileName: string
@@ -16308,6 +16340,7 @@ export namespace Prisma {
     readonly caseId: FieldRef<"CaseFile", 'String'>
     readonly uploadedById: FieldRef<"CaseFile", 'String'>
     readonly fileKind: FieldRef<"CaseFile", 'FileKind'>
+    readonly docStatus: FieldRef<"CaseFile", 'DocStatus'>
     readonly storageProvider: FieldRef<"CaseFile", 'StorageProvider'>
     readonly filePath: FieldRef<"CaseFile", 'String'>
     readonly fileName: FieldRef<"CaseFile", 'String'>
@@ -19605,7 +19638,7 @@ export namespace Prisma {
     id: string
     caseId: string
     fieldExecId: string
-    assignedById: string
+    assignedById: string | null
     status: $Enums.AssignmentStatus
     assignedAt: Date
     submittedAt: Date | null
@@ -19640,7 +19673,7 @@ export namespace Prisma {
     remarks?: boolean
     case?: boolean | BgvCaseDefaultArgs<ExtArgs>
     fieldExec?: boolean | UserDefaultArgs<ExtArgs>
-    assignedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | FieldAssignment$assignedByArgs<ExtArgs>
     visits?: boolean | FieldAssignment$visitsArgs<ExtArgs>
     _count?: boolean | FieldAssignmentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["fieldAssignment"]>
@@ -19656,7 +19689,7 @@ export namespace Prisma {
     remarks?: boolean
     case?: boolean | BgvCaseDefaultArgs<ExtArgs>
     fieldExec?: boolean | UserDefaultArgs<ExtArgs>
-    assignedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | FieldAssignment$assignedByArgs<ExtArgs>
   }, ExtArgs["result"]["fieldAssignment"]>
 
   export type FieldAssignmentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -19670,7 +19703,7 @@ export namespace Prisma {
     remarks?: boolean
     case?: boolean | BgvCaseDefaultArgs<ExtArgs>
     fieldExec?: boolean | UserDefaultArgs<ExtArgs>
-    assignedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | FieldAssignment$assignedByArgs<ExtArgs>
   }, ExtArgs["result"]["fieldAssignment"]>
 
   export type FieldAssignmentSelectScalar = {
@@ -19688,19 +19721,19 @@ export namespace Prisma {
   export type FieldAssignmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     case?: boolean | BgvCaseDefaultArgs<ExtArgs>
     fieldExec?: boolean | UserDefaultArgs<ExtArgs>
-    assignedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | FieldAssignment$assignedByArgs<ExtArgs>
     visits?: boolean | FieldAssignment$visitsArgs<ExtArgs>
     _count?: boolean | FieldAssignmentCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type FieldAssignmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     case?: boolean | BgvCaseDefaultArgs<ExtArgs>
     fieldExec?: boolean | UserDefaultArgs<ExtArgs>
-    assignedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | FieldAssignment$assignedByArgs<ExtArgs>
   }
   export type FieldAssignmentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     case?: boolean | BgvCaseDefaultArgs<ExtArgs>
     fieldExec?: boolean | UserDefaultArgs<ExtArgs>
-    assignedBy?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | FieldAssignment$assignedByArgs<ExtArgs>
   }
 
   export type $FieldAssignmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -19708,14 +19741,14 @@ export namespace Prisma {
     objects: {
       case: Prisma.$BgvCasePayload<ExtArgs>
       fieldExec: Prisma.$UserPayload<ExtArgs>
-      assignedBy: Prisma.$UserPayload<ExtArgs>
+      assignedBy: Prisma.$UserPayload<ExtArgs> | null
       visits: Prisma.$FieldVisitPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       caseId: string
       fieldExecId: string
-      assignedById: string
+      assignedById: string | null
       status: $Enums.AssignmentStatus
       assignedAt: Date
       submittedAt: Date | null
@@ -20116,7 +20149,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     case<T extends BgvCaseDefaultArgs<ExtArgs> = {}>(args?: Subset<T, BgvCaseDefaultArgs<ExtArgs>>): Prisma__BgvCaseClient<$Result.GetResult<Prisma.$BgvCasePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     fieldExec<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    assignedBy<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    assignedBy<T extends FieldAssignment$assignedByArgs<ExtArgs> = {}>(args?: Subset<T, FieldAssignment$assignedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     visits<T extends FieldAssignment$visitsArgs<ExtArgs> = {}>(args?: Subset<T, FieldAssignment$visitsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FieldVisitPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -20553,6 +20586,25 @@ export namespace Prisma {
      * Limit how many FieldAssignments to delete.
      */
     limit?: number
+  }
+
+  /**
+   * FieldAssignment.assignedBy
+   */
+  export type FieldAssignment$assignedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -38162,6 +38214,7 @@ export namespace Prisma {
     caseId: 'caseId',
     uploadedById: 'uploadedById',
     fileKind: 'fileKind',
+    docStatus: 'docStatus',
     storageProvider: 'storageProvider',
     filePath: 'filePath',
     fileName: 'fileName',
@@ -38722,6 +38775,20 @@ export namespace Prisma {
    * Reference to a field of type 'FileKind[]'
    */
   export type ListEnumFileKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FileKind[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DocStatus'
+   */
+  export type EnumDocStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'DocStatus[]'
+   */
+  export type ListEnumDocStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocStatus[]'>
     
 
 
@@ -39901,6 +39968,7 @@ export namespace Prisma {
     caseId?: UuidFilter<"CaseFile"> | string
     uploadedById?: UuidNullableFilter<"CaseFile"> | string | null
     fileKind?: EnumFileKindFilter<"CaseFile"> | $Enums.FileKind
+    docStatus?: EnumDocStatusFilter<"CaseFile"> | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFilter<"CaseFile"> | $Enums.StorageProvider
     filePath?: StringFilter<"CaseFile"> | string
     fileName?: StringFilter<"CaseFile"> | string
@@ -39922,6 +39990,7 @@ export namespace Prisma {
     caseId?: SortOrder
     uploadedById?: SortOrderInput | SortOrder
     fileKind?: SortOrder
+    docStatus?: SortOrder
     storageProvider?: SortOrder
     filePath?: SortOrder
     fileName?: SortOrder
@@ -39946,6 +40015,7 @@ export namespace Prisma {
     caseId?: UuidFilter<"CaseFile"> | string
     uploadedById?: UuidNullableFilter<"CaseFile"> | string | null
     fileKind?: EnumFileKindFilter<"CaseFile"> | $Enums.FileKind
+    docStatus?: EnumDocStatusFilter<"CaseFile"> | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFilter<"CaseFile"> | $Enums.StorageProvider
     filePath?: StringFilter<"CaseFile"> | string
     fileName?: StringFilter<"CaseFile"> | string
@@ -39967,6 +40037,7 @@ export namespace Prisma {
     caseId?: SortOrder
     uploadedById?: SortOrderInput | SortOrder
     fileKind?: SortOrder
+    docStatus?: SortOrder
     storageProvider?: SortOrder
     filePath?: SortOrder
     fileName?: SortOrder
@@ -39991,6 +40062,7 @@ export namespace Prisma {
     caseId?: UuidWithAggregatesFilter<"CaseFile"> | string
     uploadedById?: UuidNullableWithAggregatesFilter<"CaseFile"> | string | null
     fileKind?: EnumFileKindWithAggregatesFilter<"CaseFile"> | $Enums.FileKind
+    docStatus?: EnumDocStatusWithAggregatesFilter<"CaseFile"> | $Enums.DocStatus
     storageProvider?: EnumStorageProviderWithAggregatesFilter<"CaseFile"> | $Enums.StorageProvider
     filePath?: StringWithAggregatesFilter<"CaseFile"> | string
     fileName?: StringWithAggregatesFilter<"CaseFile"> | string
@@ -40235,14 +40307,14 @@ export namespace Prisma {
     id?: UuidFilter<"FieldAssignment"> | string
     caseId?: UuidFilter<"FieldAssignment"> | string
     fieldExecId?: UuidFilter<"FieldAssignment"> | string
-    assignedById?: UuidFilter<"FieldAssignment"> | string
+    assignedById?: UuidNullableFilter<"FieldAssignment"> | string | null
     status?: EnumAssignmentStatusFilter<"FieldAssignment"> | $Enums.AssignmentStatus
     assignedAt?: DateTimeFilter<"FieldAssignment"> | Date | string
     submittedAt?: DateTimeNullableFilter<"FieldAssignment"> | Date | string | null
     remarks?: StringNullableFilter<"FieldAssignment"> | string | null
     case?: XOR<BgvCaseScalarRelationFilter, BgvCaseWhereInput>
     fieldExec?: XOR<UserScalarRelationFilter, UserWhereInput>
-    assignedBy?: XOR<UserScalarRelationFilter, UserWhereInput>
+    assignedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     visits?: FieldVisitListRelationFilter
   }
 
@@ -40250,7 +40322,7 @@ export namespace Prisma {
     id?: SortOrder
     caseId?: SortOrder
     fieldExecId?: SortOrder
-    assignedById?: SortOrder
+    assignedById?: SortOrderInput | SortOrder
     status?: SortOrder
     assignedAt?: SortOrder
     submittedAt?: SortOrderInput | SortOrder
@@ -40268,14 +40340,14 @@ export namespace Prisma {
     NOT?: FieldAssignmentWhereInput | FieldAssignmentWhereInput[]
     caseId?: UuidFilter<"FieldAssignment"> | string
     fieldExecId?: UuidFilter<"FieldAssignment"> | string
-    assignedById?: UuidFilter<"FieldAssignment"> | string
+    assignedById?: UuidNullableFilter<"FieldAssignment"> | string | null
     status?: EnumAssignmentStatusFilter<"FieldAssignment"> | $Enums.AssignmentStatus
     assignedAt?: DateTimeFilter<"FieldAssignment"> | Date | string
     submittedAt?: DateTimeNullableFilter<"FieldAssignment"> | Date | string | null
     remarks?: StringNullableFilter<"FieldAssignment"> | string | null
     case?: XOR<BgvCaseScalarRelationFilter, BgvCaseWhereInput>
     fieldExec?: XOR<UserScalarRelationFilter, UserWhereInput>
-    assignedBy?: XOR<UserScalarRelationFilter, UserWhereInput>
+    assignedBy?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     visits?: FieldVisitListRelationFilter
   }, "id">
 
@@ -40283,7 +40355,7 @@ export namespace Prisma {
     id?: SortOrder
     caseId?: SortOrder
     fieldExecId?: SortOrder
-    assignedById?: SortOrder
+    assignedById?: SortOrderInput | SortOrder
     status?: SortOrder
     assignedAt?: SortOrder
     submittedAt?: SortOrderInput | SortOrder
@@ -40300,7 +40372,7 @@ export namespace Prisma {
     id?: UuidWithAggregatesFilter<"FieldAssignment"> | string
     caseId?: UuidWithAggregatesFilter<"FieldAssignment"> | string
     fieldExecId?: UuidWithAggregatesFilter<"FieldAssignment"> | string
-    assignedById?: UuidWithAggregatesFilter<"FieldAssignment"> | string
+    assignedById?: UuidNullableWithAggregatesFilter<"FieldAssignment"> | string | null
     status?: EnumAssignmentStatusWithAggregatesFilter<"FieldAssignment"> | $Enums.AssignmentStatus
     assignedAt?: DateTimeWithAggregatesFilter<"FieldAssignment"> | Date | string
     submittedAt?: DateTimeNullableWithAggregatesFilter<"FieldAssignment"> | Date | string | null
@@ -42719,6 +42791,7 @@ export namespace Prisma {
   export type CaseFileCreateInput = {
     id?: string
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -42740,6 +42813,7 @@ export namespace Prisma {
     caseId: string
     uploadedById?: string | null
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -42757,6 +42831,7 @@ export namespace Prisma {
   export type CaseFileUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -42778,6 +42853,7 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -42797,6 +42873,7 @@ export namespace Prisma {
     caseId: string
     uploadedById?: string | null
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -42811,6 +42888,7 @@ export namespace Prisma {
   export type CaseFileUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -42827,6 +42905,7 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -43081,7 +43160,7 @@ export namespace Prisma {
     remarks?: string | null
     case: BgvCaseCreateNestedOneWithoutFieldAssignmentsInput
     fieldExec: UserCreateNestedOneWithoutFieldAssignmentsAsExecInput
-    assignedBy: UserCreateNestedOneWithoutFieldAssignmentsAssignedInput
+    assignedBy?: UserCreateNestedOneWithoutFieldAssignmentsAssignedInput
     visits?: FieldVisitCreateNestedManyWithoutFieldAssignmentInput
   }
 
@@ -43089,7 +43168,7 @@ export namespace Prisma {
     id?: string
     caseId: string
     fieldExecId: string
-    assignedById: string
+    assignedById?: string | null
     status?: $Enums.AssignmentStatus
     assignedAt?: Date | string
     submittedAt?: Date | string | null
@@ -43105,7 +43184,7 @@ export namespace Prisma {
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     case?: BgvCaseUpdateOneRequiredWithoutFieldAssignmentsNestedInput
     fieldExec?: UserUpdateOneRequiredWithoutFieldAssignmentsAsExecNestedInput
-    assignedBy?: UserUpdateOneRequiredWithoutFieldAssignmentsAssignedNestedInput
+    assignedBy?: UserUpdateOneWithoutFieldAssignmentsAssignedNestedInput
     visits?: FieldVisitUpdateManyWithoutFieldAssignmentNestedInput
   }
 
@@ -43113,7 +43192,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     fieldExecId?: StringFieldUpdateOperationsInput | string
-    assignedById?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
     assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -43125,7 +43204,7 @@ export namespace Prisma {
     id?: string
     caseId: string
     fieldExecId: string
-    assignedById: string
+    assignedById?: string | null
     status?: $Enums.AssignmentStatus
     assignedAt?: Date | string
     submittedAt?: Date | string | null
@@ -43144,7 +43223,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     fieldExecId?: StringFieldUpdateOperationsInput | string
-    assignedById?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
     assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -45736,6 +45815,13 @@ export namespace Prisma {
     not?: NestedEnumFileKindFilter<$PrismaModel> | $Enums.FileKind
   }
 
+  export type EnumDocStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.DocStatus | EnumDocStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.DocStatus[] | ListEnumDocStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DocStatus[] | ListEnumDocStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumDocStatusFilter<$PrismaModel> | $Enums.DocStatus
+  }
+
   export type EnumStorageProviderFilter<$PrismaModel = never> = {
     equals?: $Enums.StorageProvider | EnumStorageProviderFieldRefInput<$PrismaModel>
     in?: $Enums.StorageProvider[] | ListEnumStorageProviderFieldRefInput<$PrismaModel>
@@ -45759,6 +45845,7 @@ export namespace Prisma {
     caseId?: SortOrder
     uploadedById?: SortOrder
     fileKind?: SortOrder
+    docStatus?: SortOrder
     storageProvider?: SortOrder
     filePath?: SortOrder
     fileName?: SortOrder
@@ -45779,6 +45866,7 @@ export namespace Prisma {
     caseId?: SortOrder
     uploadedById?: SortOrder
     fileKind?: SortOrder
+    docStatus?: SortOrder
     storageProvider?: SortOrder
     filePath?: SortOrder
     fileName?: SortOrder
@@ -45794,6 +45882,7 @@ export namespace Prisma {
     caseId?: SortOrder
     uploadedById?: SortOrder
     fileKind?: SortOrder
+    docStatus?: SortOrder
     storageProvider?: SortOrder
     filePath?: SortOrder
     fileName?: SortOrder
@@ -45816,6 +45905,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumFileKindFilter<$PrismaModel>
     _max?: NestedEnumFileKindFilter<$PrismaModel>
+  }
+
+  export type EnumDocStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DocStatus | EnumDocStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.DocStatus[] | ListEnumDocStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DocStatus[] | ListEnumDocStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumDocStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDocStatusFilter<$PrismaModel>
+    _max?: NestedEnumDocStatusFilter<$PrismaModel>
   }
 
   export type EnumStorageProviderWithAggregatesFilter<$PrismaModel = never> = {
@@ -49972,6 +50071,10 @@ export namespace Prisma {
     set?: $Enums.FileKind
   }
 
+  export type EnumDocStatusFieldUpdateOperationsInput = {
+    set?: $Enums.DocStatus
+  }
+
   export type EnumStorageProviderFieldUpdateOperationsInput = {
     set?: $Enums.StorageProvider
   }
@@ -50400,10 +50503,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutFieldAssignmentsAsExecInput, UserUpdateWithoutFieldAssignmentsAsExecInput>, UserUncheckedUpdateWithoutFieldAssignmentsAsExecInput>
   }
 
-  export type UserUpdateOneRequiredWithoutFieldAssignmentsAssignedNestedInput = {
+  export type UserUpdateOneWithoutFieldAssignmentsAssignedNestedInput = {
     create?: XOR<UserCreateWithoutFieldAssignmentsAssignedInput, UserUncheckedCreateWithoutFieldAssignmentsAssignedInput>
     connectOrCreate?: UserCreateOrConnectWithoutFieldAssignmentsAssignedInput
     upsert?: UserUpsertWithoutFieldAssignmentsAssignedInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutFieldAssignmentsAssignedInput, UserUpdateWithoutFieldAssignmentsAssignedInput>, UserUncheckedUpdateWithoutFieldAssignmentsAssignedInput>
   }
@@ -51836,6 +51941,13 @@ export namespace Prisma {
     not?: NestedEnumFileKindFilter<$PrismaModel> | $Enums.FileKind
   }
 
+  export type NestedEnumDocStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.DocStatus | EnumDocStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.DocStatus[] | ListEnumDocStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DocStatus[] | ListEnumDocStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumDocStatusFilter<$PrismaModel> | $Enums.DocStatus
+  }
+
   export type NestedEnumStorageProviderFilter<$PrismaModel = never> = {
     equals?: $Enums.StorageProvider | EnumStorageProviderFieldRefInput<$PrismaModel>
     in?: $Enums.StorageProvider[] | ListEnumStorageProviderFieldRefInput<$PrismaModel>
@@ -51851,6 +51963,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumFileKindFilter<$PrismaModel>
     _max?: NestedEnumFileKindFilter<$PrismaModel>
+  }
+
+  export type NestedEnumDocStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DocStatus | EnumDocStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.DocStatus[] | ListEnumDocStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DocStatus[] | ListEnumDocStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumDocStatusWithAggregatesFilter<$PrismaModel> | $Enums.DocStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDocStatusFilter<$PrismaModel>
+    _max?: NestedEnumDocStatusFilter<$PrismaModel>
   }
 
   export type NestedEnumStorageProviderWithAggregatesFilter<$PrismaModel = never> = {
@@ -53384,6 +53506,7 @@ export namespace Prisma {
   export type CaseFileCreateWithoutUploadedByInput = {
     id?: string
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -53403,6 +53526,7 @@ export namespace Prisma {
     id?: string
     caseId: string
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -53480,14 +53604,14 @@ export namespace Prisma {
     submittedAt?: Date | string | null
     remarks?: string | null
     case: BgvCaseCreateNestedOneWithoutFieldAssignmentsInput
-    assignedBy: UserCreateNestedOneWithoutFieldAssignmentsAssignedInput
+    assignedBy?: UserCreateNestedOneWithoutFieldAssignmentsAssignedInput
     visits?: FieldVisitCreateNestedManyWithoutFieldAssignmentInput
   }
 
   export type FieldAssignmentUncheckedCreateWithoutFieldExecInput = {
     id?: string
     caseId: string
-    assignedById: string
+    assignedById?: string | null
     status?: $Enums.AssignmentStatus
     assignedAt?: Date | string
     submittedAt?: Date | string | null
@@ -54309,6 +54433,7 @@ export namespace Prisma {
     caseId?: UuidFilter<"CaseFile"> | string
     uploadedById?: UuidNullableFilter<"CaseFile"> | string | null
     fileKind?: EnumFileKindFilter<"CaseFile"> | $Enums.FileKind
+    docStatus?: EnumDocStatusFilter<"CaseFile"> | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFilter<"CaseFile"> | $Enums.StorageProvider
     filePath?: StringFilter<"CaseFile"> | string
     fileName?: StringFilter<"CaseFile"> | string
@@ -54379,7 +54504,7 @@ export namespace Prisma {
     id?: UuidFilter<"FieldAssignment"> | string
     caseId?: UuidFilter<"FieldAssignment"> | string
     fieldExecId?: UuidFilter<"FieldAssignment"> | string
-    assignedById?: UuidFilter<"FieldAssignment"> | string
+    assignedById?: UuidNullableFilter<"FieldAssignment"> | string | null
     status?: EnumAssignmentStatusFilter<"FieldAssignment"> | $Enums.AssignmentStatus
     assignedAt?: DateTimeFilter<"FieldAssignment"> | Date | string
     submittedAt?: DateTimeNullableFilter<"FieldAssignment"> | Date | string | null
@@ -55309,6 +55434,7 @@ export namespace Prisma {
   export type CaseFileCreateWithoutCaseInput = {
     id?: string
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -55328,6 +55454,7 @@ export namespace Prisma {
     id?: string
     uploadedById?: string | null
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -55447,14 +55574,14 @@ export namespace Prisma {
     submittedAt?: Date | string | null
     remarks?: string | null
     fieldExec: UserCreateNestedOneWithoutFieldAssignmentsAsExecInput
-    assignedBy: UserCreateNestedOneWithoutFieldAssignmentsAssignedInput
+    assignedBy?: UserCreateNestedOneWithoutFieldAssignmentsAssignedInput
     visits?: FieldVisitCreateNestedManyWithoutFieldAssignmentInput
   }
 
   export type FieldAssignmentUncheckedCreateWithoutCaseInput = {
     id?: string
     fieldExecId: string
-    assignedById: string
+    assignedById?: string | null
     status?: $Enums.AssignmentStatus
     assignedAt?: Date | string
     submittedAt?: Date | string | null
@@ -58268,6 +58395,7 @@ export namespace Prisma {
   export type CaseFileCreateWithoutInputForOcrJobsInput = {
     id?: string
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -58288,6 +58416,7 @@ export namespace Prisma {
     caseId: string
     uploadedById?: string | null
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -58457,6 +58586,7 @@ export namespace Prisma {
   export type CaseFileUpdateWithoutInputForOcrJobsInput = {
     id?: StringFieldUpdateOperationsInput | string
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -58477,6 +58607,7 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -59973,14 +60104,14 @@ export namespace Prisma {
     remarks?: string | null
     case: BgvCaseCreateNestedOneWithoutFieldAssignmentsInput
     fieldExec: UserCreateNestedOneWithoutFieldAssignmentsAsExecInput
-    assignedBy: UserCreateNestedOneWithoutFieldAssignmentsAssignedInput
+    assignedBy?: UserCreateNestedOneWithoutFieldAssignmentsAssignedInput
   }
 
   export type FieldAssignmentUncheckedCreateWithoutVisitsInput = {
     id?: string
     caseId: string
     fieldExecId: string
-    assignedById: string
+    assignedById?: string | null
     status?: $Enums.AssignmentStatus
     assignedAt?: Date | string
     submittedAt?: Date | string | null
@@ -60192,14 +60323,14 @@ export namespace Prisma {
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     case?: BgvCaseUpdateOneRequiredWithoutFieldAssignmentsNestedInput
     fieldExec?: UserUpdateOneRequiredWithoutFieldAssignmentsAsExecNestedInput
-    assignedBy?: UserUpdateOneRequiredWithoutFieldAssignmentsAssignedNestedInput
+    assignedBy?: UserUpdateOneWithoutFieldAssignmentsAssignedNestedInput
   }
 
   export type FieldAssignmentUncheckedUpdateWithoutVisitsInput = {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     fieldExecId?: StringFieldUpdateOperationsInput | string
-    assignedById?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
     assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -62168,6 +62299,7 @@ export namespace Prisma {
   export type CaseFileCreateWithoutReportsInput = {
     id?: string
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -62188,6 +62320,7 @@ export namespace Prisma {
     caseId: string
     uploadedById?: string | null
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -62661,6 +62794,7 @@ export namespace Prisma {
   export type CaseFileUpdateWithoutReportsInput = {
     id?: StringFieldUpdateOperationsInput | string
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -62681,6 +62815,7 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -64414,6 +64549,7 @@ export namespace Prisma {
   export type CaseFileCreateWithoutConsentRecordsInput = {
     id?: string
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -64434,6 +64570,7 @@ export namespace Prisma {
     caseId: string
     uploadedById?: string | null
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -64720,6 +64857,7 @@ export namespace Prisma {
   export type CaseFileUpdateWithoutConsentRecordsInput = {
     id?: StringFieldUpdateOperationsInput | string
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -64740,6 +64878,7 @@ export namespace Prisma {
     caseId?: StringFieldUpdateOperationsInput | string
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -67025,6 +67164,7 @@ export namespace Prisma {
     id?: string
     caseId: string
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -67055,7 +67195,7 @@ export namespace Prisma {
   export type FieldAssignmentCreateManyFieldExecInput = {
     id?: string
     caseId: string
-    assignedById: string
+    assignedById?: string | null
     status?: $Enums.AssignmentStatus
     assignedAt?: Date | string
     submittedAt?: Date | string | null
@@ -67547,6 +67687,7 @@ export namespace Prisma {
   export type CaseFileUpdateWithoutUploadedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -67566,6 +67707,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -67584,6 +67726,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -67654,14 +67797,14 @@ export namespace Prisma {
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     case?: BgvCaseUpdateOneRequiredWithoutFieldAssignmentsNestedInput
-    assignedBy?: UserUpdateOneRequiredWithoutFieldAssignmentsAssignedNestedInput
+    assignedBy?: UserUpdateOneWithoutFieldAssignmentsAssignedNestedInput
     visits?: FieldVisitUpdateManyWithoutFieldAssignmentNestedInput
   }
 
   export type FieldAssignmentUncheckedUpdateWithoutFieldExecInput = {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
-    assignedById?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
     assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67672,7 +67815,7 @@ export namespace Prisma {
   export type FieldAssignmentUncheckedUpdateManyWithoutFieldExecInput = {
     id?: StringFieldUpdateOperationsInput | string
     caseId?: StringFieldUpdateOperationsInput | string
-    assignedById?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
     assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -68703,6 +68846,7 @@ export namespace Prisma {
     id?: string
     uploadedById?: string | null
     fileKind: $Enums.FileKind
+    docStatus?: $Enums.DocStatus
     storageProvider?: $Enums.StorageProvider
     filePath: string
     fileName: string
@@ -68748,7 +68892,7 @@ export namespace Prisma {
   export type FieldAssignmentCreateManyCaseInput = {
     id?: string
     fieldExecId: string
-    assignedById: string
+    assignedById?: string | null
     status?: $Enums.AssignmentStatus
     assignedAt?: Date | string
     submittedAt?: Date | string | null
@@ -68966,6 +69110,7 @@ export namespace Prisma {
   export type CaseFileUpdateWithoutCaseInput = {
     id?: StringFieldUpdateOperationsInput | string
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -68985,6 +69130,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -69003,6 +69149,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     uploadedById?: NullableStringFieldUpdateOperationsInput | string | null
     fileKind?: EnumFileKindFieldUpdateOperationsInput | $Enums.FileKind
+    docStatus?: EnumDocStatusFieldUpdateOperationsInput | $Enums.DocStatus
     storageProvider?: EnumStorageProviderFieldUpdateOperationsInput | $Enums.StorageProvider
     filePath?: StringFieldUpdateOperationsInput | string
     fileName?: StringFieldUpdateOperationsInput | string
@@ -69120,14 +69267,14 @@ export namespace Prisma {
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     remarks?: NullableStringFieldUpdateOperationsInput | string | null
     fieldExec?: UserUpdateOneRequiredWithoutFieldAssignmentsAsExecNestedInput
-    assignedBy?: UserUpdateOneRequiredWithoutFieldAssignmentsAssignedNestedInput
+    assignedBy?: UserUpdateOneWithoutFieldAssignmentsAssignedNestedInput
     visits?: FieldVisitUpdateManyWithoutFieldAssignmentNestedInput
   }
 
   export type FieldAssignmentUncheckedUpdateWithoutCaseInput = {
     id?: StringFieldUpdateOperationsInput | string
     fieldExecId?: StringFieldUpdateOperationsInput | string
-    assignedById?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
     assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -69138,7 +69285,7 @@ export namespace Prisma {
   export type FieldAssignmentUncheckedUpdateManyWithoutCaseInput = {
     id?: StringFieldUpdateOperationsInput | string
     fieldExecId?: StringFieldUpdateOperationsInput | string
-    assignedById?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAssignmentStatusFieldUpdateOperationsInput | $Enums.AssignmentStatus
     assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     submittedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

@@ -47,15 +47,22 @@ function toFrontend(s) {
     updatedAt:   s.updatedAt.toISOString(),
     attachedDocs:(s.docs || []).map(doc => {
       // Pick saved OCR fields from CaseFile.metadata — prefer file whose docType matches
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      // caseDbId is the resolved UUID; if null but caseNumber looks like a UUID, use it directly
+      const resolvedCaseApiId = doc.caseDbId || (UUID_RE.test(doc.caseNumber || '') ? doc.caseNumber : null);
+
       const caseFiles = doc.caseDb?.files || [];
-      const matchedFile = caseFiles.find(f => f.metadata?.docType === doc.docType) || caseFiles[0] || null;
-      const extractedData = matchedFile?.metadata?.ocrFields || {};
-      const savedLocation = matchedFile?.metadata?.location  || {};
+      const parseMeta = (m) => typeof m === 'string' ? (() => { try { return JSON.parse(m); } catch { return {}; } })() : (m || {});
+      const matchedFile = caseFiles.find(f => parseMeta(f.metadata).docType === doc.docType) || caseFiles[0] || null;
+      const fileMeta    = parseMeta(matchedFile?.metadata);
+      const extractedData = fileMeta.ocrFields || {};
+      const savedLocation = fileMeta.location  || {};
 
       return {
         key:              doc.id,
         _dbDocId:         doc.id,
         _scheduleId:      s.id,
+        _caseApiId:       resolvedCaseApiId,
         caseId:           doc.caseNumber || doc.caseDbId || '',
         caseDbId:         doc.caseDbId || null,
         candidateName:    doc.candidateName || '',
@@ -78,9 +85,12 @@ function toFrontend(s) {
 }
 
 // ── Try to resolve caseDbId from caseNumber ───────────────────────────────────
-async function resolveCaseId(caseNumber, tenantId) {
-  if (!caseNumber) return null;
-  const c = await prisma.bgvCase.findFirst({ where: { caseNumber, tenantId }, select: { id: true } });
+async function resolveCaseId(caseNumberOrId, tenantId) {
+  if (!caseNumberOrId) return null;
+  const c = await prisma.bgvCase.findFirst({
+    where: { tenantId, OR: [{ caseNumber: caseNumberOrId }, { id: caseNumberOrId }, { clientRefId: caseNumberOrId }] },
+    select: { id: true },
+  });
   return c?.id || null;
 }
 
@@ -134,12 +144,13 @@ const createSchedule = async (tenantId, body) => {
   return toFrontend(schedule);
 };
 
-const listSchedules = async (tenantId, { fieldExecId, status, from, to, page, limit } = {}) => {
+const listSchedules = async (tenantId, { fieldExecId, caseId, status, from, to, page, limit } = {}) => {
   page  = Number(page)  || 1;
   limit = Number(limit) || 20;
   const where = {
     tenantId,
     ...(fieldExecId && { fieldExecId }),
+    ...(caseId      && { docs: { some: { caseDbId: caseId } } }),
     ...(status      && { status }),
     ...(from || to) && {
       scheduledDate: {

@@ -1,7 +1,7 @@
 import os
 import base64
 import json
-from typing import Optional, Any
+from typing import Optional, Any, Union, get_origin, get_args
 
 from mistralai.client import Mistral
 from dotenv import load_dotenv
@@ -10,6 +10,30 @@ from schema import SCHEMA_MAP
 from prompt import PROMPT_MAP, SYSTEM_PROMPT
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'))
+
+
+def _coerce_str_fields(data: dict, schema_class) -> dict:
+    """
+    For fields declared Optional[str] (or str), if the LLM returns a dict or list
+    instead of a plain string, convert it to a JSON string so Pydantic doesn't reject it.
+    Fields declared as list types (e.g. addresses, witnesses) are left untouched.
+    """
+    result = {}
+    for k, v in data.items():
+        field = schema_class.model_fields.get(k)
+        if field is not None and isinstance(v, (dict, list)):
+            ann = field.annotation
+            origin = get_origin(ann)
+            args = get_args(ann)
+            # Optional[str] → Union[str, None]; bare str
+            is_str_field = (ann is str) or (
+                origin is Union and str in args and type(None) in args and len(args) == 2
+            )
+            if is_str_field:
+                result[k] = json.dumps(v, ensure_ascii=False)
+                continue
+        result[k] = v
+    return result
 
 
 class OCRPipeline:
@@ -52,6 +76,7 @@ class OCRPipeline:
             temperature=0,
         )
         data = json.loads(resp.choices[0].message.content)
+        data = _coerce_str_fields(data, schema_class)
         return schema_class(**data)
 
     def process(self, file_content: bytes, doc_type: str,

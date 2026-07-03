@@ -3,3 +3,10 @@ node_modules
 .env
 
 /generated/prisma
+
+
+# Python virtual environments
+venv/
+**/venv/
+.venv/
+**/ocr_service/venv/

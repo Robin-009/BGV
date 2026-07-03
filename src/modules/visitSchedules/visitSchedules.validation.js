@@ -47,6 +47,7 @@ const updateDocSchema = z.object({
 
 const listSchedulesQuerySchema = z.object({
   fieldExecId: z.string().uuid().optional(),
+  caseId:      z.string().uuid().optional(),
   status:      z.enum(SCHEDULE_STATUSES).optional(),
   from:        z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   to:          z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
