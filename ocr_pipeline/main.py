@@ -60,13 +60,15 @@ def parse_doc_types_input(doc_types: str) -> List[str]:
 
     return normalize_doc_types(parsed_value)
 
-
+#un-comment this 
 # @app.get("/")
 # async def root():
 #     return {"message": "API is running"}
-@app.get("/")
+
+
+@app.get("/") #---COMMENT OUT THIS WHEN RUNNING IN MAIN FRONTEND
 async def read_index():
-    return FileResponse(os.path.join(static_dir, "index.html"))
+    return FileResponse(os.path.join(static_dir, "index.html")) ##this is for testing 
 
 @app.get("/schemas", response_model=List[str])
 def list_available_schemas():
