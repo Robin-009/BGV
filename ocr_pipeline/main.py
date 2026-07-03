@@ -46,12 +46,27 @@ def normalize_doc_types(raw_doc_types: Any) -> List[str]:
     return normalized
 
 
-@app.get("/")
-async def root():
-    return {"message": "API is running"}
+def parse_doc_types_input(doc_types: str) -> List[str]:
+    raw_value = (doc_types or "").strip()
+    if not raw_value:
+        raise ValueError(
+            "doc_types is required. In Swagger UI, enter a JSON array like [\"passport\", \"pan_card\"] or a comma-separated list like passport, pan_card."
+        )
+
+    try:
+        parsed_value = json.loads(raw_value)
+    except json.JSONDecodeError:
+        parsed_value = [item.strip() for item in raw_value.split(",") if item.strip()]
+
+    return normalize_doc_types(parsed_value)
+
+
 # @app.get("/")
-# async def read_index():
-#     return FileResponse(os.path.join(static_dir, "index.html"))
+# async def root():
+#     return {"message": "API is running"}
+@app.get("/")
+async def read_index():
+    return FileResponse(os.path.join(static_dir, "index.html"))
 
 @app.get("/schemas", response_model=List[str])
 def list_available_schemas():
@@ -74,8 +89,8 @@ async def extract_document(
         raise HTTPException(status_code=400, detail="Invalid file type. Only PDF and Images (JPEG/PNG) are supported.")
 
     try:
-        # Parse the incoming JSON string array from the frontend form
-        parsed_doc_types = normalize_doc_types(json.loads(doc_types))
+        # Parse the incoming form field from Swagger UI or the frontend.
+        parsed_doc_types = parse_doc_types_input(doc_types)
 
         content = await file.read()
         structured_data, raw_text = pipeline.process(content, parsed_doc_types)
