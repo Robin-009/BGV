@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regex Matcher</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .inputs {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        textarea {
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #ecf0f1;
+        }
+        .flag-green {
+            background-color: #2ecc71;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .flag-amber {
+            background-color: #f1c40f;
+            color: black;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .flag-red {
+            background-color: #e74c3c;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .error {
+            color: #e74c3c;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Data Verification Matcher</h1>
+        
+        <div class="inputs">
+            <div class="input-group">
+                <label for="pdf_json">OCR Extracted Data (JSON)</label>
+                <textarea id="pdf_json" placeholder='{"full_name": "Rajesh Kumar Sharma", ...}'></textarea>
+            </div>
+            <div class="input-group">
+                <label for="exec_json">Field Executive Data (JSON)</label>
+                <textarea id="exec_json" placeholder='{"full_name": "Rajesh K Sharma", ...}'></textarea>
+            </div>
+        </div>
+
+        <button onclick="runMatch()">Compare Data</button>
+        <div id="error-message" class="error"></div>
+
+        <div id="overall-score-container" style="display:none; text-align: center; margin-top: 20px; font-size: 24px; font-weight: bold;">
+            Overall Match Score: <span id="overall-score">0</span>%
+            <span id="overall-flag" style="margin-left: 10px; font-size: 18px;"></span>
+        </div>
+
+        <table id="results-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Field Name</th>
+                    <th>OCR Value</th>
+                    <th>Executive Value</th>
+                    <th>Match Score</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="results-body">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function runMatch() {
+            const pdfJsonText = document.getElementById('pdf_json').value;
+            const execJsonText = document.getElementById('exec_json').value;
+            const errorDiv = document.getElementById('error-message');
+            const table = document.getElementById('results-table');
+            const tbody = document.getElementById('results-body');
+
+            errorDiv.style.display = 'none';
+            table.style.display = 'none';
+            tbody.innerHTML = '';
+
+            try {
+                const pdf_json = JSON.parse(pdfJsonText);
+                const exec_json = JSON.parse(execJsonText);
+
+                const response = await fetch('/match', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ pdf_json, exec_json })
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || 'Failed to match data');
+                }
+
+                const results = await response.json();
+                displayResults(results);
+
+            } catch (e) {
+                errorDiv.textContent = 'Error: ' + e.message;
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function displayResults(data) {
+            const table = document.getElementById('results-table');
+            const tbody = document.getElementById('results-body');
+            const overallScoreContainer = document.getElementById('overall-score-container');
+            const overallScoreSpan = document.getElementById('overall-score');
+            const overallFlagSpan = document.getElementById('overall-flag');
+            
+            const results = data.results;
+            const overallScore = data.overall_score;
+            const overallFlag = data.overall_flag;
+
+            results.forEach(res => {
+                const row = document.createElement('tr');
+                
+                const flagClass = 'flag-' + res.flag.toLowerCase();
+                
+                row.innerHTML = `
+                    <td><strong>${res.key}</strong></td>
+                    <td>${res.pdf_value !== null ? res.pdf_value : '<em>Missing</em>'}</td>
+                    <td>${res.exec_value !== null ? res.exec_value : '<em>Missing</em>'}</td>
+                    <td>${res.score_pct}%</td>
+                    <td><div class="${flagClass}">${res.flag}</div></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            overallScoreSpan.textContent = overallScore;
+            
+            overallFlagSpan.textContent = overallFlag;
+            overallFlagSpan.className = 'flag-' + overallFlag.toLowerCase();
+            overallFlagSpan.style.display = 'inline-block';
+
+            overallScoreContainer.style.display = 'block';
+            table.style.display = 'table';
+        }
+
+        // Set default example data
+        document.getElementById('pdf_json').value = JSON.stringify({
+            "child_name_eng": "SANVI SINGH",
+            "date_of_birth_eng": "09/12/2023",
+            "place_of_birth_eng": "CHAND CHOURA, VISHNU PAD",
+            "father_name_eng": "AMIT KUMAR SINGH",
+            "mother_name_eng": "SUMAN KUMARI"
+        }, null, 2);
+
+        document.getElementById('exec_json').value = JSON.stringify({
+            "child_name_eng": "SANVISINGH",
+            "date_of_birth_eng": "09/12/2023",
+            "place_of_birth_eng": "CHAND CHOURA VISHNU PAD 20012",
+            "father_name_eng": "AMIT SINGH",
+            "mother_name_eng": "SUMAN KUMARI"
+        }, null, 2);
+    </script>
+</body>
+</html>
