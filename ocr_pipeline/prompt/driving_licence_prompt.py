@@ -5,7 +5,6 @@ Extract the following fields from this raw Indian Driving Licence text:
 - holder_name: Licence holder's full name in English
 - licence_number: Driving licence number as printed (e.g., DL-0420110149646)
 - date_of_birth: Date of birth in English (format as DD/MM/YYYY if possible)
-- gender: Gender/sex in English if present
 - blood_group: Blood group if present
 
 ### Family Details
@@ -18,7 +17,6 @@ Extract the following fields from this raw Indian Driving Licence text:
 
 ### Validity Details
 - date_of_issue: Date of issue (DD/MM/YYYY if possible)
-- valid_from: Valid-from date if separately printed (DD/MM/YYYY if possible)
 - valid_till: Valid until/expiry date (DD/MM/YYYY if possible)
 - vehicle_classes: List of vehicle classes / COV authorized (e.g., MCWG, LMV, TRANS)
 

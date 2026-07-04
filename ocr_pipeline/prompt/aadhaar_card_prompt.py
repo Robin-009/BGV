@@ -4,7 +4,6 @@ Extract the following fields from this raw Aadhaar Card text:
 ### Essential Details
 - name: Full name in English
 - aadhaar_number: 12-digit Aadhaar number (format as XXXX XXXX XXXX if possible)
-- vid: Virtual ID (VID) if present
 - gender: Gender/sex in English
 - date_of_birth: Date of birth in English (format as DD/MM/YYYY if possible). If only year of birth is printed, return the year.
 
