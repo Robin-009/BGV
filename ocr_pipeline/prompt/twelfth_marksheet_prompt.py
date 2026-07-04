@@ -3,7 +3,6 @@ Extract the following fields from this raw 12th Standard (HSC/Class XII) Markshe
 
 ### Essential Details
 - student_name: Student's full name in English
-- date_of_birth: Date of birth in English (format as DD/MM/YYYY if possible)
 - father_name: Father's full name in English
 - mother_name: Mother's full name in English
 - roll_number: Roll number / seat number as printed
