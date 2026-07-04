@@ -1,4 +1,4 @@
-Bash this cmd in terminal ---->  uvicorn ocr_pipeline.main:app --reload --port 8080
+Bash this cmd in terminal ---->  uvicorn ocr_pipeline.main:app --reload --port 5000
 
 Open link to swaggerUI and check end points
 
