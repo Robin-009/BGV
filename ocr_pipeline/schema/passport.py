@@ -26,8 +26,9 @@ class PassportRecord(BaseModel):
     file_number: Optional[str] = Field(None, description="Official file or reference number usually found on the back page")
     
     # Contact Details
-    address: Optional[str] = Field(None, description="The full printed address of the passport holder")
+    address: Optional[str] = Field(None, description="The full printed address of the passport holder, exactly as printed")
+    address_line: Optional[str] = Field(None, description="House no./street/VILLAGE/PO text not captured in the fields below, exactly as printed (e.g. 'H.NO. 173, VILLAGE RAOVALI, PO NURPUR')")
     pincode: Optional[str] = Field(None, description="6-digit PIN code")
-    district: Optional[str] = Field(None, description="District if identifiable")
-    city_or_village: Optional[str] = Field(None, description="City or village if identifiable")
-    state: Optional[str] = Field(None, description="State if identifiable")
+    district: Optional[str] = Field(None, description="District, only if explicitly present or unambiguous in text")
+    city_or_village: Optional[str] = Field(None, description="City or village — prioritize a name explicitly marked with 'VILLAGE'/'VILL', if present")
+    state: Optional[str] = Field(None, description="State, ONLY if explicitly printed in the text")
