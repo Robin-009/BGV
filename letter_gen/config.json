@@ -61,6 +61,26 @@
     }
   },
 
+  "marriage_certificate": {
+    "template": "template/Marriage_Certificate_Verification_TEMPLATE.docx",
+    "source": "marriage_certificate",
+    "is_list": false,
+    "required": ["spouse1_name", "spouse2_name", "certificate_number", "registrar_office"],
+    "output_pattern": "{spouse1_name}_{spouse2_name}_Marriage_Certificate_Verification.docx",
+    "fields": {
+      "{{case_id}}": "certificate_number",
+      "{{case}}": "certificate_number",
+      "{{letter_date}}": "__today__",
+      "{{registrar_office}}": "registrar_office",
+      "{{office_address}}": "__address__:office_address",
+      "{{date_of_marriage}}": "date_of_marriage",
+      "{{place_of_marriage}}": "place_of_marriage",
+      "{{certificate_number}}": "certificate_number",
+      "{{spouse1_name}}": "spouse1_name|upper",
+      "{{spouse2_name}}": "spouse2_name|upper"
+    }
+  },
+
   "employment_certificate": {
     "template": "template/Employment_Verification_TEMPLATE.docx",
     "source": "employment_certificate.certificates",
