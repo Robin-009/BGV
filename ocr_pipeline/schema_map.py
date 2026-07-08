@@ -11,6 +11,7 @@ from ocr_pipeline.schema.employment_cert import EmploymentCertificateList, Emplo
 from ocr_pipeline.schema.tenth_marksheet_schema import TenthMarksheet
 from ocr_pipeline.schema.transfer_certificate import TransferCertificate
 from ocr_pipeline.schema.twelfth_marksheet_schema import TwelfthMarksheet
+from ocr_pipeline.schema.voter_id_schema import VoterIDCard
 
 class OCRProcessResponse(BaseModel):
     document_type: str
@@ -30,4 +31,5 @@ SCHEMA_MAP: Dict[str, Type[BaseModel]] = {
     "tenth_marksheet": TenthMarksheet,
     "transfer_certificate": TransferCertificate,
     "twelfth_marksheet": TwelfthMarksheet,
+    "voter_id": VoterIDCard
 }

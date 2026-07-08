@@ -2,11 +2,12 @@ from typing import Optional, List
 from pydantic import BaseModel, Field
 
 class Address(BaseModel):
-    address_type: Optional[str] = Field(None, description="'Current' or 'Permanent'")
-    complete_address: Optional[str] = Field(None, description="The full address string")
-    city: Optional[str] = None
-    state: Optional[str] = None
-    pin_code: Optional[str] = None
+    complete_address: Optional[str] = Field(None, description="The full address string, exactly as printed")
+    address_line: Optional[str] = Field(None, description="House/flat no., street, locality, VILLAGE, PO text not captured in the fields below, exactly as printed")
+    city_or_village: Optional[str] = Field(None, description="City, town, or village name. If explicitly marked 'VILLAGE'/'VILL', use that name.")
+    district: Optional[str] = Field(None, description="District, only if explicitly present or unambiguous in text")
+    state: Optional[str] = Field(None, description="State, ONLY if explicitly printed in the text")
+    pin_code: Optional[str] = Field(None, description="6-digit PIN code, if present")
     period_of_stay: Optional[str] = Field(None, description="Start date/year or 'Since birth' to End date/'Till now'")
     nature_of_residence: Optional[str] = Field(None, description="e.g., Own House, Rental, PG")
 
@@ -42,9 +43,11 @@ class CVBackgroundCheck(BaseModel):
     phone_number: Optional[str] = None
     criminal_record_declaration: Optional[bool] = Field(None, description="True if 'Yes' to criminal offense declaration")
     
-    # Nested Entities
-    addresses: List[Address] = Field(default_factory=list)
+    # Addresses (fixed: exactly current + permanent, not a list)
+    current_address: Optional[Address] = Field(None, description="Candidate's current/present address")
+    permanent_address: Optional[Address] = Field(None, description="Candidate's permanent address")
+
+    # Other Nested Entities
     references: List[Reference] = Field(default_factory=list)
     identity_proofs: List[IdentityProof] = Field(default_factory=list)
     court_cases: List[CourtCase] = Field(default_factory=list)
-    
