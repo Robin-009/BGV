@@ -7,6 +7,7 @@ Extract the following fields from this raw 12th Standard (HSC/Class XII) Markshe
 - mother_name: Mother's full name in English
 - roll_number: Roll number / seat number as printed
 - registration_number: Registration/enrollment number as printed
+- examination_passed: Name of the examination or certificate about   
 - exam_year: Year of examination (YYYY)
 
 ### School Details

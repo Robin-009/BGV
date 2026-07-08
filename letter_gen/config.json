@@ -1,0 +1,82 @@
+{
+  "tenth_marksheet": {
+    "template": "template/Marksheet_Verification_TEMPLATE.docx",
+    "source": "tenth_marksheet",
+    "is_list": false,
+    "required": ["student_name", "school_name"],
+    "output_pattern": "{student_name}_10TH_Verification.docx",
+    "fields": {
+      "{{ref_no}}": "registration_number",
+      "{{letter_date}}": "__today__",
+      "{{school_name}}": "school_name",
+      "{{school_address}}": "__address__:school_address",
+      "{{student_name}}": "student_name|upper",
+      "{{father_name}}": "father_name|upper",
+      "{{mother_name}}": "mother_name|upper",
+      "{{date_of_birth}}": "date_of_birth",
+      "{{examination_passed}}": "examination_passed|upper",
+      "{{roll_number}}": "roll_number",
+      "{{grade_digit}}": "__const__:0"
+    }
+  },
+
+  "twelfth_marksheet": {
+    "template": "template/Marksheet_Verification_TEMPLATE.docx",
+    "source": "twelfth_marksheet",
+    "is_list": false,
+    "required": ["student_name", "school_name"],
+    "output_pattern": "{student_name}_12TH_Verification.docx",
+    "fields": {
+      "{{ref_no}}": "registration_number",
+      "{{letter_date}}": "__today__",
+      "{{school_name}}": "school_name",
+      "{{school_address}}": "__address__:school_address",
+      "{{student_name}}": "student_name|upper",
+      "{{father_name}}": "father_name|upper",
+      "{{mother_name}}": "mother_name|upper",
+      "{{date_of_birth}}": "date_of_birth",
+      "{{examination_passed}}": "examination_passed|upper",
+      "{{roll_number}}": "roll_number",
+      "{{grade_digit}}": "__const__:2"
+    }
+  },
+
+  "birth_certificate": {
+    "template": "template/Birth_Certificate_Verification_TEMPLATE.docx",
+    "source": "birth_certificate",
+    "is_list": false,
+    "required": ["child_name", "registration_number"],
+    "output_pattern": "{child_name}_Birth_Certificate_Verification.docx",
+    "fields": {
+      "{{ref_no}}": "registration_number",
+      "{{letter_date}}": "__today__",
+      "{{registration_office}}": "registration_office",
+      "{{registration_office_address}}": "__address__:registration_office_address",
+      "{{child_name}}": "child_name|upper",
+      "{{father_name}}": "father_name|upper",
+      "{{mother_name}}": "mother_name|upper",
+      "{{date_of_birth}}": "date_of_birth",
+      "{{place_of_birth}}": "place_of_birth",
+      "{{registration_number}}": "registration_number"
+    }
+  },
+
+  "employment_certificate": {
+    "template": "template/Employment_Verification_TEMPLATE.docx",
+    "source": "employment_certificate.certificates",
+    "is_list": true,
+    "required": ["candidate_name", "company_name"],
+    "output_pattern": "{candidate_name}_{company_name}_Employment_Verification.docx",
+    "fields": {
+      "{{ref_no}}": "employee_id",
+      "{{letter_date}}": "__today__",
+      "{{candidate_name}}": "candidate_name|upper",
+      "{{company_name}}": "company_name",
+      "{{company_address}}": "__address__:company_address",
+      "{{company_telephone}}": "company_telephone",
+      "{{period_of_employment}}": "period_of_employment",
+      "{{designation}}": "designation",
+      "{{authority_name}}": "authority_name"
+    }
+  }
+}

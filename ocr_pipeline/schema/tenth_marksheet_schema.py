@@ -16,6 +16,7 @@ class TenthMarksheet(BaseModel):
     mother_name: Optional[str] = Field(None, description="Mother's name in English")
     roll_number: Optional[str] = Field(None, description="Roll/seat number as printed")
     registration_number: Optional[str] = Field(None, description="Registration/enrollment number as printed")
+    examination_passed: Optional[str] = Field(None, description="The name of the examination passed or the certificate about")
     exam_year: Optional[str] = Field(None, description="Year of examination (YYYY)")
     #addrss of school
     school_name: Optional[str] = Field(None, description="Only the institution's name — do not include address, village, or location text here")

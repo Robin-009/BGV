@@ -1,0 +1,133 @@
+{
+   "birth_certificate":{
+      "child_name":"Tarlochan Singh",
+      "gender":"Male",
+      "date_of_birth":"01/08/1981",
+      "place_of_birth":"RAWON WALI JALANDHAR",
+      "father_name":"Santokh Singh",
+      "mother_name":"Mohinder Kaur",
+      "parents_address":"H NO 173 VILLAGE RAOWALI PO NURPUR JALANDHAR",
+      "registration_number":"BR/ES/21/0024881181",
+      "registration_office":"Chief Registrar (Birth & Death), Punjab",
+      "registration_office_address":{
+         "address_line":null,
+         "city_or_village":null,
+         "district":null,
+         "state":null,
+         "pincode":null
+      }
+   },
+   "passport":{
+      "passport_number":"T9156520",
+      "country_code":"IND",
+      "nationality":"Indian",
+      "surname":"TARLOCHAN",
+      "given_name":"SINGH",
+      "gender":"M",
+      "date_of_birth":"01/08/1981",
+      "place_of_birth":"RAWON WALI JALANDHAR, PUNJAB",
+      "father_name":"Santokh Singh",
+      "mother_name":"Mohinder Kaur",
+      "spouse_name":"Savita Bhatti",
+      "date_of_issue":"24/10/2019",
+      "date_of_expiry":"23/10/2029",
+      "place_of_issue":"JALANDHAR",
+      "file_number":null,
+      "address":"H.NO. 173, VILLAGE RAOVALI, PO NURPUR, JALANDHAR, PIN: 144012, PUNJAB, INDIA",
+      "address_line":"H.NO. 173, VILLAGE RAOVALI, PO NURPUR",
+      "pincode":"144012",
+      "district":null,
+      "city_or_village":"JALANDHAR",
+      "state":"PUNJAB"
+   },
+   "employment_certificate":{
+      "certificates":[
+         {
+            "candidate_name":"Tarlochan Singh",
+            "company_name":"The Lakhnavi Grills",
+            "company_address":{
+               "address_line":"Shop number 1&2, Court road, Near old district court",
+               "state":"punjab",
+               "city_or_village":"Hoshiarpur",
+               "pincode":"146001",
+               "district":null,
+               "country":"India"
+            },
+            "company_telephone":"+91 7347404242",
+            "employee_id":null,
+            "period_of_employment":"10 December 2025 – till date",
+            "designation":"Indian & Tandoor Cook",
+            "authority_name":"Mr. Dilawar Thakur"
+         },
+         {
+            "candidate_name":"Tarlochan Singh",
+            "company_name":"Kismat Indisk Mat og Bar",
+            "company_address":{
+               "address_line":"Kilgata 1",
+               "state":null,
+               "city_or_village":"Sandefjord",
+               "pincode":null,
+               "district":null,
+               "country":"Norway"
+            },
+            "company_telephone":"+47 465 16 003",
+            "employee_id":null,
+            "period_of_employment":"20th September 2020 to 17th February 2025",
+            "designation":"Chef",
+            "authority_name":"Ahmed Shador Shorif"
+         },
+         {
+            "candidate_name":"Tarlochan Singh",
+            "company_name":"Bisque Restaurante & Bar Lounge",
+            "company_address":{
+               "address_line":"SCO-26, Ground Floor, Crystal Plaza, Chotti Baradari, Garha Road",
+               "state":null,
+               "city_or_village":"Jalandhar",
+               "pincode":null,
+               "district":null,
+               "country":"India"
+            },
+            "company_telephone":"0181-5058000",
+            "employee_id":"BR/ES/21/0024881181",
+            "period_of_employment":"December 2018 to till date",
+            "designation":"Head Indian and Tandoor Chef",
+            "authority_name":null
+         }
+      ]
+   },
+   "tenth_marksheet":{
+      "student_name":"Tarlochan Singh",
+      "date_of_birth":"01/08/1981",
+      "father_name":"Santokh Singh",
+      "mother_name":"Mohinder Kaur",
+      "roll_number":"549839",
+      "registration_number":null,
+      "examination_passed":"Matriculation Examination",
+      "exam_year":"2000",
+      "school_name":"Jalandhar Model School",
+      "school_address":{
+         "address_line":null,
+         "state":null,
+         "city_or_village":"Jalandhar",
+         "pincode":null,
+         "district":null
+      }
+   },
+   "twelfth_marksheet":{
+      "student_name":null,
+      "father_name":null,
+      "mother_name":null,
+      "roll_number":null,
+      "registration_number":null,
+      "examination_passed":null,
+      "exam_year":null,
+      "school_name":"Govt. Sen. Sec. School Bhargo Camp",
+      "school_address":{
+         "address_line":null,
+         "state":null,
+         "city_or_village":"Jalandhar",
+         "pincode":null,
+         "district":null
+      }
+   }
+}
