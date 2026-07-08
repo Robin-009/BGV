@@ -11,6 +11,8 @@ Extract the following fields from this raw Aadhaar Card text:
 - father_or_husband_name: Father's/husband's/guardian's name (often after "S/O", "D/O", "W/O", "C/O") if present
 - address: Full address as printed in English
 - pincode: 6-digit PIN code if present
+- district: District present in the address if identifiable
+- city or village : City present in the address if identifiable
 - state: State if identifiable
 
 ### Extraction Rules:

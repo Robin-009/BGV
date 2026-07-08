@@ -26,6 +26,10 @@ Extract the following fields from this raw Passport text:
 
 ### Contact Details
 - address: The full printed address of the passport holder
+- pincode: 6-digit PIN code if present
+- district: District present in the address if identifiable
+- city or village: City or village present in the address if identifiable
+- state: State if identifiable
 
 ### Extraction Rules:
 1. Handle OCR Artifacts: Reconstruct messy text, misspellings, or broken tables based on context. Pay special attention to the Machine Readable Zone (MRZ) at the bottom for verifying name, passport number, and dates.

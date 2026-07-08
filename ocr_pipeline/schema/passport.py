@@ -27,3 +27,7 @@ class PassportRecord(BaseModel):
     
     # Contact Details
     address: Optional[str] = Field(None, description="The full printed address of the passport holder")
+    pincode: Optional[str] = Field(None, description="6-digit PIN code")
+    district: Optional[str] = Field(None, description="District if identifiable")
+    city_or_village: Optional[str] = Field(None, description="City or village if identifiable")
+    state: Optional[str] = Field(None, description="State if identifiable")
