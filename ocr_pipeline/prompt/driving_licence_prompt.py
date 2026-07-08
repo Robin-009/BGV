@@ -12,8 +12,12 @@ Extract the following fields from this raw Indian Driving Licence text:
 
 ### Address & Authority
 - address: Full address as printed in English
+- pincode: 6-digit PIN code if present
+- district: District present in the address if identifiable
+- city or village: City present in the address if identifiable
+- state: State from the addressif identifiable
 - issuing_authority: Issuing RTO/authority name
-- state: State of issue if identifiable
+- state_of_issue: State of issue if identifiable
 
 ### Validity Details
 - date_of_issue: Date of issue (DD/MM/YYYY if possible)

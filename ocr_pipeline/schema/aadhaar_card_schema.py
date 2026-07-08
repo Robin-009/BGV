@@ -11,4 +11,6 @@ class AadhaarCard(BaseModel):
     father_or_husband_name: Optional[str] = Field(None, description="Father's/husband's/guardian's name")
     address: Optional[str] = Field(None, description="Full address in English")
     pincode: Optional[str] = Field(None, description="6-digit PIN code")
+    district: Optional[str] = Field(None, description="District if identifiable")
+    city_or_village: Optional[str] = Field(None, description="City, town, or village name")
     state: Optional[str] = Field(None, description="State if identifiable")
