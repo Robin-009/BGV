@@ -18,18 +18,26 @@ const { createAssignmentSchema } = require('../fieldAssignments/fieldAssignments
 
 const router = Router();
 
-// Multer: saves files to uploads/cases/:id/:kind/ on local disk
-// fileKind passed as query param (?kind=ORIGINAL_PDF) so it's available before body parsing
+// Multer: saves files to uploads/cases/{caseRef}/{folder}/
+// caseRef  → query param ?caseRef=GER-DEL-223  (clientRefId or caseNumber)
+// kind     → query param ?kind=ORIGINAL_PDF
+// docType  → query param ?docType=Passport  (display name, gets slugified)
 const diskStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const kind = req.query.kind || req.body?.fileKind || 'ORIGINAL_PDF';
-    const dir  = storage.buildCaseDir(req.params.id, kind);
+    const kind    = req.query.kind    || 'ORIGINAL_PDF';
+    const caseRef = req.query.caseRef || req.params.id;
+    const dir     = storage.buildCaseDirByRef(caseRef, kind);
     storage.ensureDir(dir);
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    const ext  = path.extname(file.originalname);
-    const name = `${Date.now()}-${uuidv4()}${ext}`;
+    const kind    = req.query.kind    || 'ORIGINAL_PDF';
+    const caseRef = req.query.caseRef || req.params.id;
+    const docType = req.query.docType || null;
+    const ext     = path.extname(file.originalname);
+    const dir     = storage.buildCaseDirByRef(caseRef, kind);
+    const seq     = storage.getNextSequence(dir, caseRef, kind, docType);
+    const name    = storage.buildFileName(caseRef, kind, docType, seq, ext);
     cb(null, name);
   },
 });
@@ -61,6 +69,7 @@ router.get( '/:id/full',                                                  casesC
 router.post('/',                     validate(createCaseSchema),          casesController.create);
 router.put( '/:id',                  validate(updateCaseSchema),          casesController.update);
 router.patch('/:id/status',          validate(updateStatusSchema),        casesController.updateStatus);
+router.post( '/:id/override-status',                                       casesController.overrideStatus);
 
 // File management
 router.get(   '/:id/files',                                               casesController.listFiles);
@@ -72,8 +81,9 @@ router.delete('/:id/files/:fileId',                                       casesC
 router.post( '/:id/md-sign', casesController.mdSign);
 
 // Comparison hub
-router.get(  '/:id/comparison',          casesController.getComparison);
-router.patch('/:id/coordinator-remarks', casesController.saveCoordinatorRemarks);
+router.get(  '/:id/comparison',                       casesController.getComparison);
+router.patch('/:id/coordinator-remarks',               casesController.saveCoordinatorRemarks);
+router.post( '/:id/files/:fileId/run-match',           casesController.runFileMatch);
 
 // Field assignments (nested under case)
 router.get( '/:caseId/field-assignments',                               faController.listForCase);

@@ -177,17 +177,22 @@ const updateVisit = async (id, tenantId, data) => {
   return visit;
 };
 
-const uploadEvidence = async (visitId, tenantId, files, uploadedById) => {
-  const visit = await assertVisit(visitId, tenantId);
+const uploadEvidence = async (visitId, tenantId, files, uploadedById, caseRef) => {
+  const visit      = await assertVisit(visitId, tenantId);
+  const visitShort = visitId.slice(0, 8);
+  const ref        = caseRef || visit.caseId;
 
   const saved = await Promise.all(
     files.map((file) => {
-      const relativePath = `${storage.UPLOAD_ROOT}/evidence/${visitId}/${file.filename}`;
       const evidenceType = file.mimetype.startsWith('image/')
         ? 'PHOTO'
         : file.mimetype.startsWith('video/')
           ? 'VIDEO'
           : 'DOCUMENT';
+      const fileKind     = evidenceType === 'PHOTO' ? 'EVIDENCE_PHOTO'
+                         : evidenceType === 'VIDEO' ? 'EVIDENCE_VIDEO'
+                         : 'EVIDENCE_DOCUMENT';
+      const relativePath = storage.buildRelativePathByRef(ref, fileKind, file.filename, visitShort);
 
       return prisma.evidenceFile.create({
         data: {

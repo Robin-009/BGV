@@ -5,6 +5,7 @@ const cors    = require('cors');
 const morgan  = require('morgan');
 
 const { errorHandler } = require('./middlewares/error.middleware');
+const authRoutes             = require('./modules/auth/auth.routes');
 const tenantsRoutes          = require('./modules/tenants/tenants.routes');
 const usersRoutes            = require('./modules/users/users.routes');
 const casesRoutes            = require('./modules/cases/cases.routes');
@@ -29,6 +30,7 @@ app.use(`/${UPLOAD_ROOT}`, express.static(path.join(process.cwd(), UPLOAD_ROOT))
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
+app.use('/api/v1/auth',              authRoutes);
 app.use('/api/v1/tenants',           tenantsRoutes);
 app.use('/api/v1/users',            usersRoutes);
 app.use('/api/v1/cases',            casesRoutes);

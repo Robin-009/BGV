@@ -16,6 +16,19 @@ const triggerOcr = async (req, res, next) => {
   }
 };
 
+const batchOcr = async (req, res, next) => {
+  try {
+    const { id: caseId } = req.params;
+    const result = await ocrService.runBatchOcr(caseId, req.tenantId);
+    success(res, result, `Batch OCR complete: ${result.succeeded}/${result.processed} succeeded`);
+  } catch (err) {
+    if (err.message?.includes('OCR service') || err.message?.includes('Unauthorized') || err.message?.includes('401')) {
+      return res.status(502).json({ success: false, message: err.message });
+    }
+    next(err);
+  }
+};
+
 const getJob = async (req, res, next) => {
   try {
     const job = await ocrService.getOcrJob(req.params.jobId);
@@ -25,4 +38,4 @@ const getJob = async (req, res, next) => {
   }
 };
 
-module.exports = { triggerOcr, getJob };
+module.exports = { triggerOcr, batchOcr, getJob };

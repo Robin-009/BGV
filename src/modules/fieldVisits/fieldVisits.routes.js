@@ -13,16 +13,30 @@ const storage = require('../../services/storage.service');
 const router = Router();
 router.use(resolveTenant);
 
-// Evidence files go to uploads/evidence/:visitId/
+// Evidence: uploads/cases/{caseRef}/evidence/{visitShort}/
+// caseRef → query param ?caseRef=GER-DEL-223
 const evidenceDisk = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = path.join(process.cwd(), storage.UPLOAD_ROOT, 'evidence', req.params.id);
+    const caseRef    = req.query.caseRef || 'unknown';
+    const visitShort = req.params.id.slice(0, 8);
+    const kind       = file.mimetype.startsWith('video/') ? 'EVIDENCE_VIDEO'
+                     : file.mimetype.startsWith('image/') ? 'EVIDENCE_PHOTO'
+                     : 'EVIDENCE_DOCUMENT';
+    const dir = storage.buildCaseDirByRef(caseRef, kind, visitShort);
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${Date.now()}-${uuidv4()}${ext}`);
+    const caseRef    = req.query.caseRef || 'unknown';
+    const visitShort = req.params.id.slice(0, 8);
+    const kind       = file.mimetype.startsWith('video/') ? 'EVIDENCE_VIDEO'
+                     : file.mimetype.startsWith('image/') ? 'EVIDENCE_PHOTO'
+                     : 'EVIDENCE_DOCUMENT';
+    const ext  = path.extname(file.originalname);
+    const dir  = storage.buildCaseDirByRef(caseRef, kind, visitShort);
+    const seq  = storage.getNextSequence(dir, caseRef, kind, null);
+    const name = storage.buildFileName(caseRef, kind, null, seq, ext);
+    cb(null, name);
   },
 });
 

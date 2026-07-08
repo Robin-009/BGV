@@ -47,8 +47,9 @@ const uploadEvidence = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'No files uploaded' });
     }
     const uploadedById = req.body.uploadedById ?? null;
+    const caseRef      = req.query.caseRef     || null;
     const saved = await fieldVisitsService.uploadEvidence(
-      req.params.id, req.tenantId, req.files, uploadedById
+      req.params.id, req.tenantId, req.files, uploadedById, caseRef
     );
     success(res, saved, `${saved.length} evidence file(s) uploaded`, 201);
   } catch (err) {

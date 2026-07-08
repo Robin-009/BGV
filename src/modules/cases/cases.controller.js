@@ -79,23 +79,25 @@ const uploadFiles = async (req, res, next) => {
 
     const caseId     = req.params.id;
     const uploadedBy = req.body.uploadedById ?? null;
-    const fileKind   = req.query.kind || req.body.fileKind || 'ORIGINAL_PDF';
+    const fileKind   = req.query.kind    || req.body.fileKind || 'ORIGINAL_PDF';
+    const caseRef    = req.query.caseRef || caseId;
+    const docType    = req.query.docType || null;
 
-    // Ensure the case belongs to this tenant
     await casesService.getCaseById(caseId, req.tenantId);
 
     const saved = await Promise.all(
       req.files.map((file) => {
-        const relativePath = storage.buildRelativePath(caseId, file.filename, fileKind);
+        const relativePath = storage.buildRelativePathByRef(caseRef, fileKind, file.filename);
         return casesService.addCaseFile({
           caseId,
-          uploadedById:  uploadedBy,
+          uploadedById: uploadedBy,
           fileKind,
-          filePath:      relativePath,
-          fileName:      file.filename,
-          originalName:  file.originalname,
-          mimeType:      file.mimetype,
-          fileSizeKb:    Math.round(file.size / 1024),
+          filePath:     relativePath,
+          fileName:     file.filename,
+          originalName: file.originalname,
+          mimeType:     file.mimetype,
+          fileSizeKb:   Math.round(file.size / 1024),
+          metadata:     docType ? { docType } : undefined,
         });
       })
     );
@@ -140,9 +142,38 @@ const getComparison = async (req, res, next) => {
 const saveCoordinatorRemarks = async (req, res, next) => {
   try {
     const result = await casesService.updateCoordinatorRemarks(
-      req.params.id, req.tenantId, req.body.remarks
+      req.params.id, req.tenantId, {
+        remarks:       req.body.remarks,
+        confirmations: req.body.confirmations,
+      }
     );
     success(res, result, 'Remarks saved');
+  } catch (err) {
+    next(err);
+  }
+};
+
+const runFileMatch = async (req, res, next) => {
+  try {
+    const { id, fileId } = req.params;
+    const { pdf_json, exec_json } = req.body;
+    const result = await casesService.runMatch(id, req.tenantId, fileId, pdf_json, exec_json);
+    success(res, result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const overrideStatus = async (req, res, next) => {
+  try {
+    const { status, remarks } = req.body;
+    if (!remarks?.trim()) {
+      return res.status(400).json({ success: false, message: 'A reason is required for status override' });
+    }
+    const bgvCase = await casesService.overrideCaseStatus(
+      req.params.id, req.tenantId, status, remarks.trim(), req.body.changedById ?? null
+    );
+    success(res, bgvCase, `Status overridden to ${status} with cascade`);
   } catch (err) {
     next(err);
   }
@@ -160,4 +191,4 @@ const mdSign = async (req, res, next) => {
   }
 };
 
-module.exports = { list, getById, getFullDetail, create, update, updateStatus, listFiles, uploadFiles, deleteFile, updateFileMeta, getComparison, saveCoordinatorRemarks, mdSign };
+module.exports = { list, getById, getFullDetail, create, update, updateStatus, overrideStatus, listFiles, uploadFiles, deleteFile, updateFileMeta, getComparison, saveCoordinatorRemarks, runFileMatch, mdSign };

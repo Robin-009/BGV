@@ -52,7 +52,6 @@ const CASE_SELECT = {
   updatedAt:            true,
   createdBy:            { select: { id: true, name: true, email: true } },
   assignedCoordinator:  { select: { id: true, name: true, email: true } },
-  candidateProfile:     { select: { id: true, fullName: true, contactNo: true, email: true } },
   _count:               { select: { files: true, ocrJobs: true } },
   files: {
     select: { metadata: true, fileKind: true },
@@ -180,10 +179,91 @@ const updateCase = async (id, tenantId, updates) => {
   if (updates.caseType      !== undefined) data.caseType      = updates.caseType;
   if (updates.initiationDate !== undefined)
     data.initiationDate = updates.initiationDate ? new Date(updates.initiationDate) : null;
+  if (updates.tatDueAt !== undefined)
+    data.tatDueAt = updates.tatDueAt ? new Date(updates.tatDueAt) : null;
   if (updates.assignedCoordinatorId !== undefined)
     data.assignedCoordinatorId = updates.assignedCoordinatorId;
 
   return prisma.bgvCase.update({ where: { id }, data, select: CASE_SELECT });
+};
+
+const STATUS_ORDER = [
+  'CREATED', 'OCR_PENDING', 'OCR_IN_PROGRESS', 'OCR_COMPLETED',
+  'MD_SIGNED', 'FIELD_ASSIGNED', 'FIELD_IN_PROGRESS', 'FIELD_SUBMITTED',
+  'UNDER_REVIEW', 'REPORT_DRAFT', 'QC_PENDING', 'QC_COMPLETED',
+  'REPORT_APPROVED', 'FINAL', 'REJECTED', 'ERROR', 'ARCHIVED',
+];
+const SI = Object.fromEntries(STATUS_ORDER.map((s, i) => [s, i]));
+
+const overrideCaseStatus = async (id, tenantId, newStatus, remarks, changedById) => {
+  const bgvCase   = await getCaseById(id, tenantId);
+  const oldStatus = bgvCase.status;
+  const targetIdx = SI[newStatus];
+
+  if (targetIdx === undefined) throw new ValidationError(`Invalid status: ${newStatus}`);
+  if (oldStatus === newStatus) throw new ValidationError('Case is already in this status');
+
+  return prisma.$transaction(async (tx) => {
+
+    // 1. Wipe reports (target is before QC stage)
+    if (targetIdx < SI.QC_PENDING) {
+      await tx.report.deleteMany({ where: { caseId: id } });
+    }
+
+    // 2. Strip matchResult + matchedAt from case_files metadata (target ≤ UNDER_REVIEW)
+    if (targetIdx <= SI.UNDER_REVIEW) {
+      await tx.$executeRaw`
+        UPDATE case_files
+        SET metadata = metadata - 'matchResult' - 'matchedAt'
+        WHERE case_id = ${id}::uuid AND metadata IS NOT NULL
+      `;
+    }
+
+    // 3. Clear coordinator remarks on case (target ≤ FIELD_SUBMITTED)
+    if (targetIdx <= SI.FIELD_SUBMITTED) {
+      await tx.bgvCase.update({
+        where: { id },
+        data:  { coordinatorRemarks: null },
+      });
+    }
+
+    // 4. Wipe field visits + all evidence files (target ≤ FIELD_ASSIGNED)
+    if (targetIdx <= SI.FIELD_ASSIGNED) {
+      await tx.evidenceFile.deleteMany({ where: { caseId: id } });
+      await tx.fieldVisit.deleteMany({ where: { caseId: id } });
+    }
+
+    // 5. Cancel field assignments (target ≤ MD_SIGNED)
+    if (targetIdx <= SI.MD_SIGNED) {
+      await tx.fieldAssignment.updateMany({
+        where: { caseId: id },
+        data:  { status: 'CANCELLED' },
+      });
+    }
+
+    // 6. Reset docStatus on uploaded docs (target ≤ OCR_COMPLETED)
+    if (targetIdx <= SI.OCR_COMPLETED) {
+      const newDocStatus = targetIdx === SI.CREATED ? 'UPLOADED' : 'DATA_EXTRACTED';
+      await tx.caseFile.updateMany({
+        where: { caseId: id, fileKind: { notIn: ['OCR_TEXT', 'STRUCTURED_JSON'] } },
+        data:  { docStatus: newDocStatus },
+      });
+    }
+
+    // 7. Update status
+    const updated = await tx.bgvCase.update({
+      where:  { id },
+      data:   { status: newStatus },
+      select: CASE_SELECT,
+    });
+
+    // 8. Log to status history
+    await tx.caseStatusHistory.create({
+      data: { caseId: id, oldStatus, newStatus, changedById: changedById ?? null, remarks: remarks ?? null },
+    });
+
+    return updated;
+  });
 };
 
 const updateCaseStatus = async (id, tenantId, newStatus, remarks, changedById) => {
@@ -221,7 +301,7 @@ const getCaseFiles = async (id, tenantId) => {
 };
 
 const addCaseFile = async ({ caseId, uploadedById, fileKind, filePath, fileName,
-                              originalName, mimeType, fileSizeKb }) => {
+                              originalName, mimeType, fileSizeKb, metadata }) => {
   return prisma.caseFile.create({
     data: {
       caseId,
@@ -233,6 +313,7 @@ const addCaseFile = async ({ caseId, uploadedById, fileKind, filePath, fileName,
       originalName: originalName ?? null,
       mimeType:     mimeType     ?? null,
       fileSizeKb:   fileSizeKb   ?? null,
+      metadata:     metadata     ?? undefined,
     },
     select: {
       id: true, fileKind: true, fileName: true, originalName: true,
@@ -273,31 +354,46 @@ const updateFileMetadata = async (caseId, fileId, tenantId, metadata) => {
 };
 
 const getComparisonData = async (caseId, tenantId) => {
-  const bgvCase = await prisma.bgvCase.findFirst({
-    where: { id: caseId, tenantId },
-    select: {
-      id: true, caseNumber: true, candidateName: true, clientName: true, caseType: true,
-      status: true, coordinatorRemarks: true,
-      files: {
-        select: { id: true, originalName: true, docStatus: true, metadata: true },
-        orderBy: { createdAt: 'asc' },
-      },
-      fieldVisits: {
-        select: {
-          id: true, visitNumber: true, status: true,
-          verificationMode: true, verificationStatus: true,
-          groundObservations: true, fieldValues: true,
-          notes: true, submittedAt: true,
-          fieldAssignment: {
-            select: { fieldExec: { select: { id: true, name: true } } },
-          },
+  const [bgvCase, scheduleDocRows] = await Promise.all([
+    prisma.bgvCase.findFirst({
+      where: { id: caseId, tenantId },
+      select: {
+        id: true, caseNumber: true, candidateName: true, clientName: true, caseType: true,
+        status: true, coordinatorRemarks: true,
+        files: {
+          where: { fileKind: { notIn: ['MD_SIGNOFF_LETTER', 'REPORT_PDF', 'OCR_TEXT'] } },
+          select: { id: true, fileKind: true, originalName: true, docStatus: true, metadata: true },
+          orderBy: { createdAt: 'asc' },
         },
-        orderBy: { submittedAt: 'desc' },
-        take: 1,
+        fieldVisits: {
+          select: {
+            id: true, visitNumber: true, status: true,
+            verificationMode: true, verificationStatus: true,
+            groundObservations: true, fieldValues: true,
+            notes: true, submittedAt: true,
+            fieldAssignment: {
+              select: { fieldExec: { select: { id: true, name: true } } },
+            },
+          },
+          orderBy: { submittedAt: 'desc' },
+          take: 1,
+        },
       },
-    },
-  });
+    }),
+    // Per-document FE remarks stored in schedule docs
+    prisma.fieldVisitScheduleDoc.findMany({
+      where: { caseDbId: caseId },
+      select: { docType: true, verificationNotes: true, personMet: true, status: true },
+    }),
+  ]);
+
   if (!bgvCase) throw new NotFoundError('Case');
+
+  // Build a lookup of docType → schedule doc (for per-document FE remarks)
+  const scheduleDocByType = {};
+  scheduleDocRows.forEach(d => {
+    if (d.docType) scheduleDocByType[d.docType.toLowerCase()] = d;
+  });
 
   const latestVisit = bgvCase.fieldVisits[0] || null;
   return {
@@ -307,19 +403,31 @@ const getComparisonData = async (caseId, tenantId) => {
     clientName:         bgvCase.clientName,
     caseType:           bgvCase.caseType,
     coordinatorRemarks: bgvCase.coordinatorRemarks || {},
-    files: bgvCase.files.map(f => ({
-      id:                  f.id,
-      originalName:        f.originalName,
-      docStatus:           f.docStatus,
-      ocrFields:           f.metadata?.ocrFields            || {},
-      docType:             f.metadata?.docType              || null,
-      savedAt:             f.metadata?.savedAt              || null,
-      verifiedByFE:        f.metadata?.verifiedByFE         || false,
-      feVerificationStatus:f.metadata?.feVerificationStatus || null,
-      feVerifiedAt:        f.metadata?.feVerifiedAt         || null,
-      feExecName:          f.metadata?.feExecName           || null,
-      feVerificationMode:  f.metadata?.feVerificationMode   || null,
-    })),
+    files: bgvCase.files.map(f => {
+      const docType = f.metadata?.docType || null;
+      const schedDoc = docType ? scheduleDocByType[docType.toLowerCase()] : null;
+      return {
+        id:                  f.id,
+        fileKind:            f.fileKind,
+        originalName:        f.originalName,
+        docStatus:           f.docStatus,
+        ocrFields:           f.metadata?.ocrFields            || {},
+        feFieldValues:       f.metadata?.ocrFields            || {},
+        docType,
+        savedAt:             f.metadata?.savedAt              || null,
+        verifiedByFE:        f.metadata?.verifiedByFE         || false,
+        feVerificationStatus:f.metadata?.feVerificationStatus || null,
+        feVerifiedAt:        f.metadata?.feVerifiedAt         || null,
+        feExecName:          f.metadata?.feExecName           || null,
+        feVerificationMode:  f.metadata?.feVerificationMode   || null,
+        matchResult:         f.metadata?.matchResult          || null,
+        matchedAt:           f.metadata?.matchedAt            || null,
+        // Per-document FE remarks
+        feRemarks:           schedDoc?.verificationNotes      || null,
+        fePersonMet:         schedDoc?.personMet              || null,
+        feDocStatus:         schedDoc?.status                 || null,
+      };
+    }),
     feData: latestVisit ? {
       visitId:           latestVisit.id,
       fieldExecName:     latestVisit.fieldAssignment?.fieldExec?.name || 'Field Executive',
@@ -417,20 +525,22 @@ const mdSignCase = async (caseId, tenantId, { signedBy, remarks }) => {
   const path     = require('path');
   const signedAt = new Date().toISOString();
 
-  // Use proper md-signoff subdirectory
-  const dir = storage.buildCaseDir(caseId, 'MD_SIGNOFF_LETTER');
+  const caseRef = bgvCase.clientRefId || bgvCase.caseNumber;
+  const dir     = storage.buildCaseDirByRef(caseRef, 'MD_SIGNOFF_LETTER');
   storage.ensureDir(dir);
 
   // Generate one PDF (or HTML fallback) per source document
   const letterFiles = await Promise.all(files.map(async file => {
-    const html        = buildMdLetterForFile(bgvCase, file, signedBy, remarks);
-    const docTypeSlug = (file.metadata?.docType || 'doc').replace(/[^a-zA-Z0-9]/g, '_').slice(0, 30);
+    const html    = buildMdLetterForFile(bgvCase, file, signedBy, remarks);
+    const docType = file.metadata?.docType || null;
 
     const pdfBuf = await htmlToPdf(html).catch(() => null);
     const usePdf = pdfBuf !== null;
+    const ext    = usePdf ? '.pdf' : '.html';
 
-    const fileName   = `MD_SignOff_${bgvCase.caseNumber}_${docTypeSlug}_${file.id.slice(0, 8)}.${usePdf ? 'pdf' : 'html'}`;
-    const fullPath   = path.join(dir, fileName);
+    const seq      = storage.getNextSequence(dir, caseRef, 'MD_SIGNOFF_LETTER', docType);
+    const fileName = storage.buildFileName(caseRef, 'MD_SIGNOFF_LETTER', docType, seq, ext);
+    const fullPath = path.join(dir, fileName);
 
     if (usePdf) {
       fs.writeFileSync(fullPath, pdfBuf);
@@ -442,7 +552,7 @@ const mdSignCase = async (caseId, tenantId, { signedBy, remarks }) => {
       sourceFileId: file.id,
       docType:      file.metadata?.docType || 'Document',
       fileName,
-      relativePath: storage.buildRelativePath(caseId, fileName, 'MD_SIGNOFF_LETTER'),
+      relativePath: storage.buildRelativePathByRef(caseRef, 'MD_SIGNOFF_LETTER', fileName),
       fileSizeKb:   Math.round((usePdf ? pdfBuf.length : Buffer.byteLength(html, 'utf8')) / 1024) || 1,
       mimeType:     usePdf ? 'application/pdf' : 'text/html',
     };
@@ -493,7 +603,6 @@ const getFullCase = async (id, tenantId) => {
       createdAt: true, updatedAt: true,
       createdBy:           { select: { id: true, name: true, email: true } },
       assignedCoordinator: { select: { id: true, name: true, email: true } },
-      candidateProfile:    { select: { id: true, fullName: true, contactNo: true, email: true, address: true } },
       _count: { select: { files: true, ocrJobs: true } },
       files: {
         select: {
@@ -554,13 +663,58 @@ const getFullCase = async (id, tenantId) => {
   return bgvCase;
 };
 
-const updateCoordinatorRemarks = async (caseId, tenantId, remarks) => {
-  await getCaseById(caseId, tenantId);
+const updateCoordinatorRemarks = async (caseId, tenantId, { remarks, confirmations } = {}) => {
+  const bgvCase = await prisma.bgvCase.findFirst({
+    where: { id: caseId, tenantId },
+    select: { id: true, coordinatorRemarks: true },
+  });
+  if (!bgvCase) throw new NotFoundError('Case');
+
+  const existing = bgvCase.coordinatorRemarks || {};
+  const updated = {
+    ...existing,
+    ...(remarks       !== undefined && { remarks }),
+    ...(confirmations !== undefined && { confirmations }),
+    savedAt: new Date().toISOString(),
+  };
+
   return prisma.bgvCase.update({
     where:  { id: caseId },
-    data:   { coordinatorRemarks: remarks },
+    data:   { coordinatorRemarks: updated },
     select: { id: true, coordinatorRemarks: true, updatedAt: true },
   });
+};
+
+const MATCH_ENGINE_URL = process.env.MATCH_ENGINE_URL || 'http://localhost:8000';
+
+const runMatch = async (caseId, tenantId, fileId, pdfJson, execJson) => {
+  await getCaseById(caseId, tenantId);
+  const file = await prisma.caseFile.findFirst({
+    where:  { id: fileId, caseId },
+    select: { id: true, metadata: true },
+  });
+  if (!file) throw new NotFoundError('File');
+
+  let matchResult;
+  try {
+    const resp = await fetch(`${MATCH_ENGINE_URL}/match`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ pdf_json: pdfJson, exec_json: execJson }),
+    });
+    if (!resp.ok) throw new Error(`Engine returned ${resp.status}`);
+    matchResult = await resp.json();
+  } catch (err) {
+    throw new Error(`Matching engine unavailable: ${err.message}`);
+  }
+
+  const meta = file.metadata || {};
+  await prisma.caseFile.update({
+    where: { id: fileId },
+    data:  { metadata: { ...meta, matchResult, matchedAt: new Date().toISOString() } },
+  });
+
+  return matchResult;
 };
 
 module.exports = {
@@ -571,10 +725,12 @@ module.exports = {
   createCase,
   updateCase,
   updateCaseStatus,
+  overrideCaseStatus,
   getCaseFiles,
   addCaseFile,
   removeCaseFile,
   updateFileMetadata,
   getComparisonData,
   updateCoordinatorRemarks,
+  runMatch,
 };

@@ -3,19 +3,19 @@ const path = require('path');
 const prisma = require('../../config/database');
 const { NotFoundError } = require('../../utils/errors');
 
-const OCR_SERVICE_URL = process.env.OCR_SERVICE_URL || 'http://localhost:8001';
+const OCR_SERVICE_URL = process.env.OCR_SERVICE_URL || 'http://localhost:8000';
 
 // Maps frontend display doc-type name → Python service key
 const DOC_TYPE_KEY = {
   'Birth Certificate':                  'birth_certificate',
-  'Employment Verification':            'employment_verification',
-  'Marriage Certificate':               'marriage_certificate',
+  'Employment Verification':            'employment_certificate',
+  'Marriage Certificate':               'marriage',
   'Affidavit Certificate Verification': 'affidavit',
   'Education Certificate Verification': 'education_certificate',
   'Passport':                           'passport',
-  'Driving License':                    'driving_license',
+  'Driving License':                    'driving_licence',
   'Voter ID':                           'voter_id',
-  'Aadhaar Card':                       'aadhaar',
+  'Aadhaar Card':                       'aadhaar_card',
   'PAN Card':                           'pan_card',
   'Bank Statement':                     'bank_statement',
   'Curriculum Vitae (CV)':              'cv_bgv',
@@ -35,17 +35,17 @@ const FIELD_LABELS = {
     mother_name:         "Mother's Name",
     parents_address:     'Address',
   },
-  employment_verification: {
-    candidate_name:    'Candidate Name',
-    designation:       'Designation',
-    employee_id:       'Employee ID',
-    company_name:      'Company Name',
-    company_address:   'Company Address',
-    company_telephone: 'Company Telephone',
-    authority_name:    'Issuing Authority',
-    // period_from + period_to → combined in mapExtracted
+  employment_certificate: {
+    candidate_name:       'Candidate Name',
+    designation:          'Designation',
+    employee_id:          'Employee ID',
+    company_name:         'Company Name',
+    company_address:      'Company Address',
+    company_telephone:    'Company Telephone',
+    authority_name:       'Issuing Authority',
+    period_of_employment: 'Period of Employment',
   },
-  marriage_certificate: {
+  marriage: {
     spouse1_name:         'Spouse 1 Name',
     spouse2_name:         'Spouse 2 Name',
     date_of_marriage:     'Date of Marriage',
@@ -92,7 +92,7 @@ const FIELD_LABELS = {
     file_number:     'File No.',
     address:         'Address',
   },
-  driving_license: {
+  driving_licence: {
     candidate_name: 'Candidate Name',
     license_no:     'License No.',
     date_of_birth:  'Date Of Birth',
@@ -114,7 +114,7 @@ const FIELD_LABELS = {
     constituency:        'Constituency',
     part_number:         'Part Number',
   },
-  aadhaar: {
+  aadhaar_card: {
     candidate_name: 'Candidate Name',
     aadhaar_no:     'Aadhaar No.',
     date_of_birth:  'Date Of Birth',
@@ -170,6 +170,19 @@ function mapExtracted(docTypeKey, raw) {
   const labelMap = FIELD_LABELS[docTypeKey] || {};
   const out = {};
 
+  // Employment certificate: pipeline returns data nested inside a certificates array
+  if (docTypeKey === 'employment_certificate') {
+    const certs = Array.isArray(raw.certificates) ? raw.certificates : [raw];
+    const cert = certs[0] || {};
+    for (const [pyKey, val] of Object.entries(cert)) {
+      if (val === null || val === undefined || val === '') continue;
+      if (typeof val === 'object') continue;
+      const label = labelMap[pyKey];
+      if (label) out[label] = val;
+    }
+    return out;
+  }
+
   for (const [pyKey, val] of Object.entries(raw)) {
     if (val === null || val === undefined || val === '') continue;
     // Skip arrays and objects here — handled separately below
@@ -178,21 +191,14 @@ function mapExtracted(docTypeKey, raw) {
     if (label) out[label] = val;
   }
 
-  // Combine period_from + period_to for employment and bank statement
-  if (docTypeKey === 'employment_verification') {
-    const from = raw.period_from || '';
-    const to   = raw.period_to   || '';
-    if (from || to) {
-      out['Period of Employment'] = to ? `${from} - ${to}` : from;
-    }
-  }
+  // Combine period_from + period_to for bank statement
   if (docTypeKey === 'bank_statement') {
     const from = raw.period_from || '';
     const to   = raw.period_to   || '';
     if (from || to) out['Statement Period'] = to ? `${from} - ${to}` : from;
   }
 
-  // CV boolean field
+  // CV boolean + array fields
   if (docTypeKey === 'cv_bgv') {
     if (raw.criminal_record_declaration !== null && raw.criminal_record_declaration !== undefined) {
       out['Criminal Record Declaration'] = raw.criminal_record_declaration ? 'Yes' : 'No';
@@ -204,7 +210,7 @@ function mapExtracted(docTypeKey, raw) {
   }
 
   // Marriage witnesses array
-  if (docTypeKey === 'marriage_certificate') {
+  if (docTypeKey === 'marriage') {
     if (Array.isArray(raw.witnesses) && raw.witnesses.length) out['Witnesses'] = raw.witnesses;
   }
 
@@ -254,18 +260,18 @@ const runOcr = async (caseId, fileId, tenantId, docTypeDisplay) => {
     const fileBuffer = fs.readFileSync(absPath);
     const mimeType   = file.mimeType || 'application/pdf';
 
-    // Call Python OCR service
+    // Call Python OCR service — doc_types is a JSON array string as expected by the pipeline
     const blob    = new Blob([fileBuffer], { type: mimeType });
     const form    = new FormData();
     form.append('file', blob, file.fileName);
-    form.append('doc_type', docTypeKey);
+    form.append('doc_types', JSON.stringify([docTypeKey]));
 
     let ocrResp;
     try {
       ocrResp = await fetch(`${OCR_SERVICE_URL}/extract`, { method: 'POST', body: form });
     } catch {
       throw new Error(
-        `OCR service is not running. Start it with: python bgv_backend/ocr_service/main.py (runs on port 8001)`
+        `OCR service is not running. Start it with: uvicorn ocr_pipeline.main:app --port 8000`
       );
     }
 
@@ -274,8 +280,10 @@ const runOcr = async (caseId, fileId, tenantId, docTypeDisplay) => {
       throw new Error(`OCR service error ${ocrResp.status}: ${errText}`);
     }
 
+    // Pipeline returns { document_types: [...], extracted_data: { [docTypeKey]: {...} }, raw_ocr_text }
     const ocrData    = await ocrResp.json();
-    const ocrFields  = mapExtracted(docTypeKey, ocrData.extracted_data);
+    const rawPayload = ocrData.extracted_data?.[docTypeKey] ?? ocrData.extracted_data ?? {};
+    const ocrFields  = mapExtracted(docTypeKey, rawPayload);
     const rawText    = ocrData.raw_ocr_text || null;
 
     // Save to OCRJob
@@ -316,10 +324,54 @@ const runOcr = async (caseId, fileId, tenantId, docTypeDisplay) => {
   }
 };
 
+// Runs OCR for every uploadable file in a case concurrently.
+// Returns per-file results so the caller can report partial success.
+const runBatchOcr = async (caseId, tenantId) => {
+  const bgvCase = await prisma.bgvCase.findFirst({ where: { id: caseId, tenantId } });
+  if (!bgvCase) throw new NotFoundError('Case');
+
+  const files = await prisma.caseFile.findMany({
+    where: { caseId, fileKind: { notIn: ['OCR_TEXT', 'STRUCTURED_JSON'] } },
+  });
+
+  if (files.length === 0) return { processed: 0, succeeded: 0, failed: 0, results: [] };
+
+  const settled = await Promise.allSettled(
+    files.map(async (file) => {
+      const docTypeDisplay = file.metadata?.docType;
+      const result = await runOcr(caseId, file.id, tenantId, docTypeDisplay);
+      return {
+        fileId:    file.id,
+        fileName:  file.originalName || file.fileName,
+        docType:   docTypeDisplay,
+        status:    'success',
+        ocrFields: result.ocrFields,
+      };
+    })
+  );
+
+  const results = settled.map((r, i) =>
+    r.status === 'fulfilled'
+      ? r.value
+      : {
+          fileId:   files[i].id,
+          fileName: files[i].originalName || files[i].fileName,
+          docType:  files[i].metadata?.docType,
+          status:   'failed',
+          error:    r.reason?.message || 'OCR failed',
+        }
+  );
+
+  const succeeded = results.filter(r => r.status === 'success').length;
+  const failed    = results.filter(r => r.status === 'failed').length;
+
+  return { processed: files.length, succeeded, failed, results };
+};
+
 const getOcrJob = async (jobId) => {
   const job = await prisma.oCRJob.findUnique({ where: { id: jobId } });
   if (!job) throw new NotFoundError('OCRJob');
   return job;
 };
 
-module.exports = { runOcr, getOcrJob, DOC_TYPE_KEY };
+module.exports = { runOcr, runBatchOcr, getOcrJob, DOC_TYPE_KEY };
