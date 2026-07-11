@@ -5,7 +5,7 @@ from typing import Optional, Any, List, Dict
 from mistralai.client import Mistral
 from dotenv import load_dotenv
 
-from ocr_pipeline.schema_map import SCHEMA_MAP, RAW_PROFILES
+from schema_map import SCHEMA_MAP, RAW_PROFILES
 
 load_dotenv()
 

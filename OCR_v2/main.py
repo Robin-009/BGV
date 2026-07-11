@@ -1,8 +1,8 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from ocr_pipeline.pipeline import OCRPipeline
-from ocr_pipeline.schema_map import SCHEMA_MAP
+from pipeline import OCRPipeline
+from schema_map import SCHEMA_MAP
 from typing import List, Dict, Any
 import uvicorn
 import json
