@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mistral OCR Pipeline</title>
+    <style>
+      :root {
+        --primary: #5e17eb;
+        --bg: #f8f9fa;
+        --card-bg: #ffffff;
+        --text: #212529;
+        --border: #dee2e6;
+      }
+
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      header {
+        background: var(--card-bg);
+        padding: 1rem 2rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+        padding: 1rem;
+        gap: 1rem;
+      }
+
+      .panel {
+        background: var(--card-bg);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .left-panel {
+        flex: 1.2;
+      }
+
+      .right-panel {
+        flex: 1;
+      }
+
+      .panel-header {
+        padding: 0.75rem 1rem;
+        background: #f1f3f5;
+        border-bottom: 1px solid var(--border);
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #viewer-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #adb5bd;
+      }
+
+      #viewer,
+      #img-viewer {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: none;
+      }
+
+      #img-viewer {
+        object-fit: contain;
+      }
+
+      #result-container {
+        padding: 1.5rem;
+        overflow-y: auto;
+        flex: 1;
+      }
+
+      .schema-section-title {
+        color: var(--primary);
+        font-size: 1.1rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.7rem;
+        border-bottom: 2px solid #f1f3f5;
+        padding-bottom: 0.3rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .field-group {
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #f1f3f5;
+        padding-bottom: 0.5rem;
+      }
+
+      .field-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .field-input {
+        width: 100%;
+        padding: 0.4rem;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--text);
+        background: transparent;
+        transition: all 0.2s;
+        box-sizing: border-box;
+      }
+
+      .field-input:hover {
+        background: #f8f9fa;
+        border-color: #dee2e6;
+      }
+
+      .field-input:focus {
+        outline: none;
+        background: white;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(94, 23, 235, 0.1);
+      }
+
+      .upload-controls {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      /* CUSTOM MULTI-SELECT CHECKBOX DROPDOWN CSS */
+      .multiselect-dropdown {
+        position: relative;
+        width: 220px;
+        display: inline-block;
+      }
+
+      .dropdown-anchor {
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        background: #fff;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        user-select: none;
+      }
+
+      .dropdown-anchor::after {
+        content: "▼";
+        font-size: 0.7rem;
+        color: #6c757d;
+        transition: transform 0.2s;
+      }
+
+      .multiselect-dropdown.open .dropdown-anchor::after {
+        transform: rotate(180deg);
+      }
+
+      .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        max-height: 200px;
+        overflow-y: auto;
+        margin-top: 4px;
+      }
+
+      .multiselect-dropdown.open .dropdown-menu {
+        display: block;
+      }
+
+      .dropdown-item {
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+
+      .dropdown-item:hover {
+        background: #f1f3f5;
+      }
+
+      .dropdown-item input[type="checkbox"] {
+        cursor: pointer;
+        accent-color: var(--primary);
+        width: 15px;
+        height: 15px;
+      }
+
+      input[type="file"] {
+        padding: 0.4rem;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+      }
+
+      button {
+        padding: 0.5rem 1.5rem;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: opacity 0.2s;
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .loader {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid var(--primary);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        display: none;
+        margin-right: 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      #status-msg {
+        font-size: 0.9rem;
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div style="font-size: 1.2rem; font-weight: 700">
+        Mistral OCR <span style="color: var(--primary)">Pipeline</span>
+      </div>
+      <div class="upload-controls">
+        <div class="multiselect-dropdown" id="custom-dropdown">
+          <div class="dropdown-anchor" id="dropdown-anchor">Select Schemas</div>
+          <div class="dropdown-menu" id="dropdown-menu"></div>
+        </div>
+
+        <input type="file" id="file-input" accept="application/pdf,image/*" />
+        <button id="extract-btn">Extract Data</button>
+        <div class="loader" id="loader"></div>
+        <span id="status-msg"></span>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="panel left-panel">
+        <div class="panel-header">Document Preview</div>
+        <div id="viewer-container">
+          <div id="no-doc" style="color: white; font-style: italic">
+            No document uploaded
+          </div>
+          <iframe id="viewer"></iframe>
+          <img id="img-viewer" alt="Document Preview" />
+        </div>
+      </div>
+      <div class="panel right-panel">
+        <div class="panel-header">
+          Structured Data
+          <div style="display: flex; gap: 0.5rem">
+            <button
+              onclick="copyJSON()"
+              style="font-size: 0.7rem; padding: 2px 8px; background: #6c757d"
+            >
+              Copy JSON
+            </button>
+          </div>
+        </div>
+        <div id="result-container">
+          <p style="color: #6c757d; font-style: italic">
+            Results will appear here...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const dropdownWrapper = document.getElementById("custom-dropdown");
+      const dropdownAnchor = document.getElementById("dropdown-anchor");
+      const dropdownMenu = document.getElementById("dropdown-menu");
+
+      const fileInput = document.getElementById("file-input");
+      const extractBtn = document.getElementById("extract-btn");
+      const viewer = document.getElementById("viewer");
+      const imgViewer = document.getElementById("img-viewer");
+      const noDoc = document.getElementById("no-doc");
+      const resultContainer = document.getElementById("result-container");
+      const loader = document.getElementById("loader");
+      const statusMsg = document.getElementById("status-msg");
+
+      let currentResult = null;
+
+      // Toggle dropdown visualization visibility
+      dropdownAnchor.onclick = (e) => {
+        e.stopPropagation();
+        dropdownWrapper.classList.toggle("open");
+      };
+
+      // Close dropdown when clicking anywhere else outside of it
+      document.onclick = (e) => {
+        if (!dropdownWrapper.contains(e.target)) {
+          dropdownWrapper.classList.remove("open");
+        }
+      };
+
+      // Fetch schemas on load
+      fetch("/schemas")
+        .then((res) => res.json())
+        .then((schemas) => {
+          schemas.forEach((s, index) => {
+            const label = document.createElement("label");
+            label.className = "dropdown-item";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = s;
+            checkbox.className = "schema-checkbox";
+
+            // Listen for checkbox changes to update structural fields
+            checkbox.onchange = () => handleCheckboxSelection();
+
+            label.appendChild(checkbox);
+            label.appendChild(
+              document.createTextNode(s.replace(/_/g, " ").toUpperCase()),
+            );
+            dropdownMenu.appendChild(label);
+
+            // Pre-tick the first available schema by default
+            if (index === 0) {
+              checkbox.checked = true;
+              loadMultipleSchemaFields([s]);
+            }
+          });
+        });
+
+      function getSelectedSchemas() {
+        return Array.from(
+          document.querySelectorAll(".schema-checkbox:checked"),
+        ).map((cb) => cb.value);
+      }
+
+      function handleCheckboxSelection() {
+        const selected = getSelectedSchemas();
+
+        // Update selection text preview anchor
+        if (selected.length === 0) {
+          dropdownAnchor.textContent = "Select Schemas";
+        } else if (selected.length <= 2) {
+          dropdownAnchor.textContent = selected
+            .map((s) => s.replace(/_/g, " ").toUpperCase())
+            .join(", ");
+        } else {
+          dropdownAnchor.textContent = `${selected.length} Schemas Selected`;
+        }
+
+        loadMultipleSchemaFields(selected);
+      }
+
+      async function loadMultipleSchemaFields(docTypes) {
+        if (docTypes.length === 0) {
+          resultContainer.innerHTML =
+            '<p style="color: #6c757d; font-style: italic;">Tick a schema from the dropdown...</p>';
+          return;
+        }
+        try {
+          currentResult = {};
+          resultContainer.innerHTML = "";
+
+          for (const docType of docTypes) {
+            const response = await fetch(`/schema-fields/${docType}`);
+            if (!response.ok)
+              throw new Error(`Failed to load fields for ${docType}`);
+            const fields = await response.json();
+
+            appendEmptySchemaSection(docType, fields);
+          }
+        } catch (err) {
+          console.error(err);
+          resultContainer.innerHTML = `<p style="color: red;">Error: ${err.message}</p>`;
+        }
+      }
+
+      function appendEmptySchemaSection(docType, fields) {
+        currentResult[docType] = {};
+
+        const title = document.createElement("div");
+        title.className = "schema-section-title";
+        title.textContent = docType.replace(/_/g, " ");
+        resultContainer.appendChild(title);
+
+        fields.forEach((field) => {
+          const group = document.createElement("div");
+          group.className = "field-group";
+
+          const label = document.createElement("div");
+          label.className = "field-label";
+          label.textContent = field.replace(/_/g, " ");
+
+          const input = document.createElement("input");
+          input.className = "field-input";
+          input.value = "";
+          input.placeholder = "Empty";
+
+          input.oninput = (e) => {
+            currentResult[docType][field] = e.target.value;
+          };
+
+          group.appendChild(label);
+          group.appendChild(input);
+          resultContainer.appendChild(group);
+        });
+      }
+
+      function formatFieldValue(value) {
+        if (value === null || value === undefined) return "";
+        if (typeof value === "object") {
+          return JSON.stringify(value, null, 2);
+        }
+        return String(value);
+      }
+
+      function updateCurrentResultValue(schemaKey, key, rawValue) {
+        if (!currentResult[schemaKey]) currentResult[schemaKey] = {};
+
+        if (!rawValue) {
+          currentResult[schemaKey][key] = rawValue;
+          return;
+        }
+
+        try {
+          currentResult[schemaKey][key] = JSON.parse(rawValue);
+        } catch {
+          currentResult[schemaKey][key] = rawValue;
+        }
+      }
+
+      // Preview logic
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const url = URL.createObjectURL(file);
+        noDoc.style.display = "none";
+
+        if (file.type === "application/pdf") {
+          viewer.src = url;
+          viewer.style.display = "block";
+          imgViewer.style.display = "none";
+        } else {
+          imgViewer.src = url;
+          imgViewer.style.display = "block";
+          viewer.style.display = "none";
+        }
+      };
+
+      // Extraction logic
+      extractBtn.onclick = async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+          alert("Please select a file first.");
+          return;
+        }
+
+        const selectedDocTypes = getSelectedSchemas();
+        if (selectedDocTypes.length === 0) {
+          alert("Please check/tick at least one schema structure.");
+          return;
+        }
+
+        const normalizedDocTypes = selectedDocTypes
+          .map((docType) => {
+            if (typeof docType === "string") return docType;
+            if (docType && typeof docType === "object") {
+              return (
+                docType.value ||
+                docType.doc_type ||
+                docType.name ||
+                docType.key ||
+                ""
+              );
+            }
+            return "";
+          })
+          .filter(Boolean);
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("doc_types", JSON.stringify(normalizedDocTypes));
+
+        extractBtn.disabled = true;
+        loader.style.display = "inline-block";
+        statusMsg.textContent = "Processing...";
+        resultContainer.innerHTML =
+          "<p>Analyzing document against ticked structures...</p>";
+
+        try {
+          const response = await fetch("/extract", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) throw new Error(await response.text());
+
+          const result = await response.json();
+          currentResult = result.extracted_data;
+          displayMultiResults(result.extracted_data);
+          statusMsg.textContent = "Success!";
+          statusMsg.style.color = "green";
+        } catch (err) {
+          console.error(err);
+          resultContainer.innerHTML = `<p style="color: red;">Error: ${err.message}</p>`;
+          statusMsg.textContent = "Failed";
+          statusMsg.style.color = "red";
+        } finally {
+          extractBtn.disabled = false;
+          loader.style.display = "none";
+        }
+      };
+
+      function displayMultiResults(data) {
+        resultContainer.innerHTML = "";
+
+        for (const [schemaKey, schemaData] of Object.entries(data)) {
+          const title = document.createElement("div");
+          title.className = "schema-section-title";
+          title.textContent = schemaKey.replace(/_/g, " ");
+          resultContainer.appendChild(title);
+
+          for (const [key, value] of Object.entries(schemaData || {})) {
+            const group = document.createElement("div");
+            group.className = "field-group";
+
+            const label = document.createElement("div");
+            label.className = "field-label";
+            label.textContent = key.replace(/_/g, " ");
+
+            const isComplexValue =
+              Array.isArray(value) || typeof value === "object";
+            const fieldEditor = document.createElement(
+              isComplexValue ? "textarea" : "input",
+            );
+            fieldEditor.className = "field-input";
+            fieldEditor.value = formatFieldValue(value);
+            fieldEditor.placeholder = "N/A";
+
+            if (isComplexValue) {
+              fieldEditor.rows = 4;
+              fieldEditor.style.fontFamily = "monospace";
+            }
+
+            fieldEditor.oninput = (e) => {
+              updateCurrentResultValue(schemaKey, key, e.target.value);
+            };
+
+            group.appendChild(label);
+            group.appendChild(fieldEditor);
+            resultContainer.appendChild(group);
+          }
+        }
+      }
+
+      function copyJSON() {
+        if (!currentResult) return;
+        navigator.clipboard.writeText(JSON.stringify(currentResult, null, 2));
+        alert("JSON copied to clipboard");
+      }
+    </script>
+  </body>
+</html>

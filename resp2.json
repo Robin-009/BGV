@@ -1,0 +1,173 @@
+{
+  "aadhaar_card": null,
+  "birth_certificate": {
+    "child_name": "TARLOCHAN SINGH",
+    "gender": "Male",
+    "date_of_birth": "01/08/1981",
+    "place_of_birth": "RAWON WALI JALANDHAR",
+    "father_name": "SANTOKH SINGH",
+    "mother_name": "MOHINDER KAUR",
+    "parents_address": "H NO 173 VILLAGE RAOWALI PO NURPUR JALANDHAR",
+    "registration_number": "BR/ES/21/0024881181",
+    "registration_office": "Chief Registrar (Birth & Death), Punjab",
+    "registration_office_address": {
+      "address_line": null,
+      "city_or_village": null,
+      "district": null,
+      "state": "Punjab",
+      "pincode": null
+    }
+  },
+  "cv_bgv": {
+    "full_name": "Tarlochan Singh",
+    "father_name": "Santokh Singh",
+    "mother_name": "Mohinder Kaur",
+    "spouse_name": null,
+    "date_of_birth": "01/08/1981",
+    "nationality": "Indian",
+    "phone_number": "+91 8699886702",
+    "criminal_record_declaration": null,
+    "current_address": {
+      "complete_address": "H.No.173, Vill. Raowali, Po. Nurpur, Distt. Jalandhar - 144012, Punjab",
+      "address_line": "H.No.173, Vill. Raowali, Po. Nurpur",
+      "city_or_village": "Jalandhar",
+      "district": "Jalandhar",
+      "state": "Punjab",
+      "pin_code": "144012",
+      "period_of_stay": null,
+      "nature_of_residence": null
+    },
+    "permanent_address": {
+      "complete_address": "H.No.173, Vill. Raowali, Po. Nurpur, Distt. Jalandhar - 144012, Punjab",
+      "address_line": "H.No.173, Vill. Raowali, Po. Nurpur",
+      "city_or_village": "Jalandhar",
+      "district": "Jalandhar",
+      "state": "Punjab",
+      "pin_code": "144012",
+      "period_of_stay": null,
+      "nature_of_residence": null
+    },
+    "references": null,
+    "identity_proofs": null,
+    "court_cases": null
+  },
+  "driving_licence": null,
+  "marriage": null,
+  "pan_card": null,
+  "passport": {
+    "passport_number": "L5953661",
+    "country_code": "IND",
+    "nationality": "Indian",
+    "surname": "Singh",
+    "given_name": "Tarlochan",
+    "gender": "M",
+    "date_of_birth": "01/08/1981",
+    "place_of_birth": "RAWON WALI JALANDHAR, PUNJAB",
+    "father_name": "Santokh Singh",
+    "mother_name": "Mohinder Kaur",
+    "spouse_name": "Savita Bhatti",
+    "date_of_issue": "22/01/2014",
+    "date_of_expiry": "23/10/2029",
+    "place_of_issue": "DUBAI",
+    "file_number": "JA2074211495219 - OLD PASSPORT REPORTED LOST",
+    "address": "H.NO. 173, VILLAGE RAOVALI, PO NURPUR, JALANDHAR, PIN: 144012, PUNJAB, INDIA",
+    "address_line": "H.NO. 173, VILLAGE RAOVALI, PO NURPUR",
+    "pincode": "144012",
+    "district": "Jalandhar",
+    "city_or_village": "Jalandhar",
+    "state": "Punjab"
+  },
+  "employment_certificate": {
+    "certificates": [
+      {
+        "candidate_name": "Tarlochan Singh",
+        "company_name": "The Lakhnavi Grills",
+        "company_address": {
+          "address_line": "Shop number 1&2, Court road, Near old district court",
+          "state": "Punjab",
+          "city_or_village": "Hoshiarpur",
+          "pincode": "146001",
+          "district": "Hoshiarpur",
+          "country": "India"
+        },
+        "company_telephone": "+91 7347404242",
+        "employee_id": null,
+        "period_of_employment": "10 December 2025 to till date",
+        "designation": "Indian & Tandoor Cook",
+        "authority_name": "Mr. Dilawar Thakur"
+      },
+      {
+        "candidate_name": "Tarlochan Singh",
+        "company_name": "Kismat Indisk Mat og Bar",
+        "company_address": {
+          "address_line": "Kilgata 1, 3217 Sandefjord",
+          "state": null,
+          "city_or_village": "Sandefjord",
+          "pincode": null,
+          "district": null,
+          "country": "Norway"
+        },
+        "company_telephone": "+47 465 16 003",
+        "employee_id": null,
+        "period_of_employment": "20th September 2020 to 17th February 2025",
+        "designation": "Chef",
+        "authority_name": "Ahmed Shador Shorif"
+      },
+      {
+        "candidate_name": "Tarlochan Singh",
+        "company_name": "Bisque Restaurante & Bar Lounge",
+        "company_address": {
+          "address_line": "SCO-26, Ground Floor, Crystal Plaza, Chotti Baradari, Garha Road",
+          "state": "Punjab",
+          "city_or_village": "Jalandhar",
+          "pincode": null,
+          "district": "Jalandhar",
+          "country": "India"
+        },
+        "company_telephone": "0181-5058000",
+        "employee_id": null,
+        "period_of_employment": "Since December 2018 to till date",
+        "designation": "Head Indian and Tandoor Chef",
+        "authority_name": null
+      }
+    ]
+  },
+  "internship_certificate": null,
+  "tenth_marksheet": {
+    "student_name": "Tarlacian Singh",
+    "date_of_birth": "01-08-1981",
+    "father_name": "Santokh Singh",
+    "mother_name": "Mohinder Kaur",
+    "roll_number": "549839",
+    "registration_number": "T9156520",
+    "examination_passed": "Matriculation Examination",
+    "exam_year": "2000",
+    "school_name": "Jalandhar Model School",
+    "school_address": {
+      "address_line": null,
+      "state": "Punjab",
+      "city_or_village": "Jalandhar",
+      "pincode": null,
+      "district": "Jalandhar"
+    }
+  },
+  "transfer_certificate": null,
+  "twelfth_marksheet": null,
+  "voter_id": {
+    "name": "Tarlochan Singh",
+    "epic_number": "T9156520",
+    "gender": "Male",
+    "date_of_birth": "01/08/1981",
+    "relation_name": "Santokh Singh",
+    "relation_type": "Father",
+    "voter_address": {
+      "address_line": "H.NO. 173, VILLAGE RAOVALI, PO NURPUR",
+      "state": "Punjab",
+      "city_or_village": "Jalandhar",
+      "pincode": "144012",
+      "district": "Jalandhar"
+    },
+    "assembly_constituency": null,
+    "issue_date": "24/10/2019"
+  }
+}
