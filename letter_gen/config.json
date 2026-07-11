@@ -41,23 +41,39 @@
     }
   },
 
-  "birth_certificate": {
-    "template": "template/Birth_Certificate_Verification_TEMPLATE.docx",
-    "source": "birth_certificate",
+  "transfer_certificate": {
+    "template": "template/TC_Verification_TEMPLATE.docx",
+    "source": "transfer_certificate",
     "is_list": false,
-    "required": ["child_name", "registration_number"],
-    "output_pattern": "{child_name}_Birth_Certificate_Verification.docx",
+    "required": ["candidate_name", "school_name"],
+    "output_pattern": "{candidate_name}_{school_name}_Transfer_Certificate_Verification.docx",
     "fields": {
-      "{{ref_no}}": "registration_number",
+      "{{case_id}}": "tc_number",
       "{{letter_date}}": "__today__",
-      "{{registration_office}}": "registration_office",
-      "{{registration_office_address}}": "__address__:registration_office_address",
-      "{{child_name}}": "child_name|upper",
+      "{{candidate_name}}": "candidate_name|upper",
       "{{father_name}}": "father_name|upper",
       "{{mother_name}}": "mother_name|upper",
       "{{date_of_birth}}": "date_of_birth",
-      "{{place_of_birth}}": "place_of_birth",
-      "{{registration_number}}": "registration_number"
+      "{{date_of_leaving}}": "date_of_leaving",
+      "{{school_name}}": "school_name",
+      "{{school_address}}": "__address__:school_address",
+      "{{tc_number}}": "tc_number"
+    }
+  },
+
+  "internship_certificate": {
+    "template": "template/Internship_Verification_TEMPLATE.docx",
+    "source": "internship_certificate.certificate",
+    "is_list": true,
+    "required": ["candidate_name", "company_name"],
+    "output_pattern": "{candidate_name}_{company_name}_Internship_Verification.docx",
+    "fields": {
+      "{{candidate_name}}": "candidate_name|upper",
+      "{{company_name}}": "company_name",
+      "{{training_location}}": "__address__:training_location",
+      "{{training_period}}": "training_period",
+      "{{training_program}}": "training_program",
+      "{{nature_of_training}}": "nature_of_training"
     }
   },
 
@@ -80,7 +96,6 @@
       "{{spouse2_name}}": "spouse2_name|upper"
     }
   },
-
   "employment_certificate": {
     "template": "template/Employment_Verification_TEMPLATE.docx",
     "source": "employment_certificate.certificates",
