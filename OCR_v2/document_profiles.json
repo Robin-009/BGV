@@ -1,0 +1,403 @@
+{
+  "aadhaar_card": {
+    "display_name": "Aadhaar Card",
+    "instructions": "Extract the cardholder's name, Aadhaar number, gender, date of birth, father's or husband's name, and address details exactly as printed.",
+    "fields": {
+      "name": {"type": "str", "description": "Full name in English."},
+      "aadhaar_number": {"type": "str", "description": "12-digit Aadhaar number without spaces or hyphens."},
+      "gender": {"type": "str", "description": "Gender or sex in English."},
+      "date_of_birth": {"type": "str", "description": "Date of birth in DD/MM/YYYY format if possible."},
+      "father_or_husband_name": {"type": "str", "description": "Father's, husband's, or guardian's name if present."},
+      "address": {"type": "str", "description": "Full address as printed in English."},
+      "pincode": {"type": "str", "description": "6-digit PIN code if present."},
+      "district": {"type": "str", "description": "District if identifiable from the address."},
+      "city_or_village": {"type": "str", "description": "City, town, or village if identifiable from the address."},
+      "state": {"type": "str", "description": "State only if explicitly printed."}
+    }
+  },
+  "pan_card": {
+    "display_name": "PAN Card",
+    "instructions": "Extract the PAN number, cardholder's name, father's name, and date of birth.",
+    "fields": {
+      "name": {"type": "str", "description": "Cardholder's full name."},
+      "pan_number": {"type": "str", "description": "10-character PAN in the format 5 letters, 4 digits, 1 letter."},
+      "date_of_birth": {"type": "str", "description": "Date of birth in DD/MM/YYYY format if possible."},
+      "father_name": {"type": "str", "description": "Father's full name if present."}
+    }
+  },
+  "passport": {
+    "display_name": "Passport",
+    "instructions": "Extract the passport number, nationality, full name, date of birth, family details, validity dates, place of issue, and address details from the passport bio page.",
+    "fields": {
+      "passport_number": {"type": "str", "description": "Unique alphanumeric passport number."},
+      "country_code": {"type": "str", "description": "Issuing country code such as IND."},
+      "nationality": {"type": "str", "description": "Nationality of the passport holder."},
+      "surname": {"type": "str", "description": "Last name or surname of the holder."},
+      "given_name": {"type": "str", "description": "First and middle names of the holder."},
+      "gender": {"type": "str", "description": "Gender or sex as printed."},
+      "date_of_birth": {"type": "str", "description": "Date of birth in DD/MM/YYYY format if possible."},
+      "place_of_birth": {"type": "str", "description": "City, state, or country of birth."},
+      "father_name": {"type": "str", "description": "Legal father's full name."},
+      "mother_name": {"type": "str", "description": "Legal mother's full name."},
+      "spouse_name": {"type": "str", "description": "Spouse's name if printed."},
+      "date_of_issue": {"type": "str", "description": "Passport issue date."},
+      "date_of_expiry": {"type": "str", "description": "Passport expiry date."},
+      "place_of_issue": {"type": "str", "description": "Issuing authority or location."},
+      "file_number": {"type": "str", "description": "Official file or reference number."},
+      "address": {"type": "str", "description": "Full printed address of the passport holder."},
+      "address_line": {"type": "str", "description": "House, street, village, or PO text not cleanly mapping to the other address fields."},
+      "city_or_village": {"type": "str", "description": "City or village name; prefer names explicitly marked VILLAGE or VILL."},
+      "district": {"type": "str", "description": "District if explicitly labeled or unambiguous."},
+      "pincode": {"type": "str", "description": "6-digit PIN code if present."},
+      "state": {"type": "str", "description": "State only if literally printed."}
+    }
+  },
+  "cv_bgv": {
+    "display_name": "Curriculum Vitae",
+    "instructions": "Extract personal details, addresses, references, identity proofs, and court cases from the CV/background check text.",
+    "fields": {
+      "full_name": {"type": "str", "description": "Candidate's full legal name."},
+      "father_name": {"type": "str", "description": "Father's full name."},
+      "mother_name": {"type": "str", "description": "Mother's full name."},
+      "spouse_name": {"type": "str", "description": "Spouse's full name."},
+      "date_of_birth": {"type": "str", "description": "Date of birth in DD/MM/YYYY format if possible."},
+      "nationality": {"type": "str", "description": "Candidate's nationality."},
+      "phone_number": {"type": "str", "description": "Primary phone number."},
+      "criminal_record_declaration": {"type": "bool", "description": "True if a criminal offense declaration is positive, false if negative, otherwise null."},
+      "current_address": {
+        "type": "object",
+        "description": "Current or present address with complete_address, address_line, city_or_village, district, state, pin_code, period_of_stay, and nature_of_residence.",
+        "fields": {
+          "complete_address": {"type": "str", "description": "Full address string exactly as printed."},
+          "address_line": {"type": "str", "description": "House, street, locality, village, or PO text not captured elsewhere."},
+          "city_or_village": {"type": "str", "description": "City, town, or village name."},
+          "district": {"type": "str", "description": "District if explicitly labeled or unambiguous."},
+          "state": {"type": "str", "description": "State only if printed."},
+          "pin_code": {"type": "str", "description": "6-digit PIN code if present."},
+          "period_of_stay": {"type": "str", "description": "Start and end period of stay."},
+          "nature_of_residence": {"type": "str", "description": "Nature of residence such as Own House, Rental, or PG."}
+        }
+      },
+      "permanent_address": {
+        "type": "object",
+        "description": "Permanent address using the same address structure as current_address.",
+        "fields": {
+          "complete_address": {"type": "str", "description": "Full address string exactly as printed."},
+          "address_line": {"type": "str", "description": "House, street, locality, village, or PO text not captured elsewhere."},
+          "city_or_village": {"type": "str", "description": "City, town, or village name."},
+          "district": {"type": "str", "description": "District if explicitly labeled or unambiguous."},
+          "state": {"type": "str", "description": "State only if printed."},
+          "pin_code": {"type": "str", "description": "6-digit PIN code if present."},
+          "period_of_stay": {"type": "str", "description": "Start and end period of stay."},
+          "nature_of_residence": {"type": "str", "description": "Nature of residence such as Own House, Rental, or PG."}
+        }
+      },
+      "references": {
+        "type": "list",
+        "description": "List of references mentioned in the CV/background check.",
+        "items": {
+          "type": "object",
+          "fields": {
+            "name": {"type": "str", "description": "Reference name."},
+            "company_designation": {"type": "str", "description": "Company designation or role."},
+            "contact_number": {"type": "str", "description": "Contact number."},
+            "email_id": {"type": "str", "description": "Email address."},
+            "acquainted_since": {"type": "str", "description": "Since when the reference knows the candidate."},
+            "investigator_findings": {"type": "str", "description": "Integrity, honesty, or reliability comments."}
+          }
+        }
+      },
+      "identity_proofs": {
+        "type": "list",
+        "description": "List of identity proofs mentioned in the CV/background check.",
+        "items": {
+          "type": "object",
+          "fields": {
+            "document_type": {"type": "str", "description": "Document type such as Aadhaar, PAN, Driving License, or Passport."},
+            "id_number": {"type": "str", "description": "Alphanumeric identifier."},
+            "validity_expiry_date": {"type": "str", "description": "Validity or expiry date."},
+            "place_of_issue": {"type": "str", "description": "Place of issue."}
+          }
+        }
+      },
+      "court_cases": {
+        "type": "list",
+        "description": "List of court cases mentioned in the CV/background check.",
+        "items": {
+          "type": "object",
+          "fields": {
+            "jurisdiction": {"type": "str", "description": "Court name or location."},
+            "case_title": {"type": "str", "description": "Case title such as State v. Person."},
+            "case_number": {"type": "str", "description": "Case number."},
+            "case_status": {"type": "str", "description": "Status such as Pending or Disposed."}
+          }
+        }
+      }
+    }
+  },
+  "birth_certificate": {
+    "display_name": "Birth Certificate",
+    "instructions": "Extract the child's name, gender, date of birth, place of birth, family details, registration number, registration office, and office address.",
+    "fields": {
+      "child_name": {"type": "str", "description": "Full name of the child."},
+      "gender": {"type": "str", "description": "Child's gender or sex in English."},
+      "date_of_birth": {"type": "str", "description": "Date of birth in DD/MM/YYYY format if possible."},
+      "place_of_birth": {"type": "str", "description": "Place of birth in English."},
+      "father_name": {"type": "str", "description": "Father's full name."},
+      "mother_name": {"type": "str", "description": "Mother's full name."},
+      "parents_address": {"type": "str", "description": "Parents' full address in English."},
+      "registration_number": {"type": "str", "description": "Birth registration number as printed on the certificate."},
+      "registration_office": {"type": "str", "description": "Only the name of the registration office or authority."},
+      "registration_office_address": {
+        "type": "object",
+        "description": "Registration office address with address_line, city_or_village, district, state, and pincode.",
+        "fields": {
+          "address_line": {"type": "str", "description": "Building, street, locality, or area text."},
+          "city_or_village": {"type": "str", "description": "City, town, or village if identifiable."},
+          "district": {"type": "str", "description": "District if explicitly labeled or unambiguous."},
+          "state": {"type": "str", "description": "State only if printed."},
+          "pincode": {"type": "str", "description": "6-digit PIN code if present."}
+        }
+      }
+    }
+  },
+  "driving_licence": {
+    "display_name": "Driving Licence",
+    "instructions": "Extract the licence holder details, address, issuing authority, dates, and authorized vehicle classes.",
+    "fields": {
+      "holder_name": {"type": "str", "description": "Licence holder's full name."},
+      "licence_number": {"type": "str", "description": "Driving licence number as printed."},
+      "date_of_birth": {"type": "str", "description": "Date of birth in DD/MM/YYYY format if possible."},
+      "blood_group": {"type": "str", "description": "Blood group if present."},
+      "father_or_guardian_name": {"type": "str", "description": "Father's or guardian's name if present."},
+      "address": {"type": "str", "description": "Full address as printed."},
+      "pincode": {"type": "str", "description": "6-digit PIN code if present."},
+      "district": {"type": "str", "description": "District if identifiable."},
+      "city_or_village": {"type": "str", "description": "City or village if identifiable."},
+      "state": {"type": "str", "description": "State from the address if identifiable."},
+      "issuing_authority": {"type": "str", "description": "Issuing RTO or authority name."},
+      "state_of_issue": {"type": "str", "description": "State of issue if identifiable."},
+      "date_of_issue": {"type": "str", "description": "Date of issue in DD/MM/YYYY format if possible."},
+      "valid_till": {"type": "str", "description": "Validity or expiry date in DD/MM/YYYY format if possible."},
+      "vehicle_classes": {
+        "type": "list",
+        "description": "List of vehicle classes or COVs authorized.",
+        "items": {"type": "str", "description": "One vehicle class code such as MCWG, LMV, or TRANS."}
+      }
+    }
+  },
+  "marriage": {
+    "display_name": "Marriage Certificate",
+    "instructions": "Extract both spouse names, certificate number, marriage date, place of marriage, registrar office, office address, date of registration, and witnesses.",
+    "fields": {
+      "spouse1_name": {"type": "str", "description": "Full name of the first spouse."},
+      "spouse2_name": {"type": "str", "description": "Full name of the second spouse."},
+      "certificate_number": {"type": "str", "description": "Official certificate or registration number."},
+      "date_of_marriage": {"type": "str", "description": "Exact date the marriage occurred."},
+      "place_of_marriage": {"type": "str", "description": "Venue, city, or full address where the marriage was solemnized."},
+      "registrar_office": {"type": "str", "description": "Only the registrar office or institution name."},
+      "date_of_registration": {"type": "str", "description": "Date the document was officially signed or registered."},
+      "office_address": {
+        "type": "object",
+        "description": "Registrar office address with address_line, city_or_village, district, state, and pincode.",
+        "fields": {
+          "address_line": {"type": "str", "description": "Building, street, locality, or area text."},
+          "city_or_village": {"type": "str", "description": "City, town, or village if identifiable."},
+          "district": {"type": "str", "description": "District if explicitly labeled or unambiguous."},
+          "state": {"type": "str", "description": "State only if printed."},
+          "pincode": {"type": "str", "description": "6-digit PIN code if present."}
+        }
+      },
+      "witnesses": {
+        "type": "list",
+        "description": "List of witnesses mentioned in the certificate.",
+        "items": {
+          "type": "object",
+          "fields": {
+            "name": {"type": "str", "description": "Witness name."},
+            "address": {"type": "str", "description": "Witness address if provided."}
+          }
+        }
+      }
+    }
+  },
+  "employment_certificate": {
+    "display_name": "Employment Certificate",
+    "instructions": "Extract every employment or experience certificate entry, including company details, candidate name, designation, employee ID, employment period, telephone, and authority name.",
+    "fields": {
+      "certificates": {
+        "type": "list",
+        "description": "One entry per distinct employment or experience certificate.",
+        "items": {
+          "type": "object",
+          "fields": {
+            "candidate_name": {"type": "str", "description": "Candidate's full name."},
+            "company_name": {"type": "str", "description": "Company name."},
+            "company_address": {
+              "type": "object",
+              "description": "Company address with address_line, state, city_or_village, pincode, district, and country.",
+              "fields": {
+                "address_line": {"type": "str", "description": "House, street, locality, or village text."},
+                "state": {"type": "str", "description": "State only if printed."},
+                "city_or_village": {"type": "str", "description": "City, town, or village name."},
+                "pincode": {"type": "str", "description": "Postal or PIN code if present."},
+                "district": {"type": "str", "description": "District if explicitly present or unambiguous."},
+                "country": {"type": "str", "description": "Country if outside India or explicitly stated."}
+              }
+            },
+            "company_telephone": {"type": "str", "description": "Company telephone number if available."},
+            "employee_id": {"type": "str", "description": "Employee ID if available."},
+            "period_of_employment": {"type": "str", "description": "Employment period in English."},
+            "designation": {"type": "str", "description": "Employee designation or title."},
+            "authority_name": {"type": "str", "description": "Issuing authority name."}
+          }
+        }
+      }
+    }
+  },
+  "internship_certificate": {
+    "display_name": "Internship Certificate",
+    "instructions": "Extract every internship or training certificate entry, including company details, training location, training period, training program, and nature of training.",
+    "fields": {
+      "certificate": {
+        "type": "list",
+        "description": "One entry per distinct internship or training certificate.",
+        "items": {
+          "type": "object",
+          "fields": {
+            "candidate_name": {"type": "str", "description": "Candidate's name."},
+            "company_name": {"type": "str", "description": "Company or institute name."},
+            "company_address": {
+              "type": "object",
+              "description": "Company address with address_line, state, city_or_village, pincode, district, and country.",
+              "fields": {
+                "address_line": {"type": "str", "description": "House, street, locality, or village text."},
+                "state": {"type": "str", "description": "State only if printed."},
+                "city_or_village": {"type": "str", "description": "City, town, or village name."},
+                "pincode": {"type": "str", "description": "Postal or PIN code if present."},
+                "district": {"type": "str", "description": "District if explicitly present or unambiguous."},
+                "country": {"type": "str", "description": "Country if outside India or explicitly stated."}
+              }
+            },
+            "training_location": {
+              "type": "object",
+              "description": "Separate training or site location if explicitly distinct from the company address.",
+              "fields": {
+                "address_line": {"type": "str", "description": "House, street, locality, or village text."},
+                "state": {"type": "str", "description": "State only if printed."},
+                "city_or_village": {"type": "str", "description": "City, town, or village name."},
+                "pincode": {"type": "str", "description": "Postal or PIN code if present."},
+                "district": {"type": "str", "description": "District if explicitly present or unambiguous."},
+                "country": {"type": "str", "description": "Country if outside India or explicitly stated."}
+              }
+            },
+            "training_period": {"type": "str", "description": "Training period exactly as printed."},
+            "training_program": {"type": "str", "description": "Specific training program or domain."},
+            "nature_of_training": {"type": "str", "description": "Nature or category of the training."}
+          }
+        }
+      }
+    }
+  },
+  "tenth_marksheet": {
+    "display_name": "10th Marksheet",
+    "instructions": "Extract the student name, date of birth, parents' names, roll number, registration number, examination passed, exam year, school name, and school address details.",
+    "fields": {
+      "student_name": {"type": "str", "description": "Student's full name in English."},
+      "date_of_birth": {"type": "str", "description": "Date of birth in DD/MM/YYYY format if possible."},
+      "father_name": {"type": "str", "description": "Father's full name."},
+      "mother_name": {"type": "str", "description": "Mother's full name."},
+      "roll_number": {"type": "str", "description": "Roll or seat number as printed."},
+      "registration_number": {"type": "str", "description": "Registration or enrollment number as printed."},
+      "examination_passed": {"type": "str", "description": "Name of the examination or certificate."},
+      "exam_year": {"type": "str", "description": "Year of examination."},
+      "school_name": {"type": "str", "description": "Only the institution name, not location text."},
+      "school_address": {
+        "type": "object",
+        "description": "School address with address_line, city_or_village, district, state, and pincode.",
+        "fields": {
+          "address_line": {"type": "str", "description": "Locality or area text not captured elsewhere."},
+          "city_or_village": {"type": "str", "description": "City or village name if identifiable."},
+          "district": {"type": "str", "description": "District if explicitly labeled or unambiguous."},
+          "state": {"type": "str", "description": "State only if printed."},
+          "pincode": {"type": "str", "description": "6-digit PIN code if present."}
+        }
+      }
+    }
+  },
+  "twelfth_marksheet": {
+    "display_name": "12th Marksheet",
+    "instructions": "Extract the student name, parents' names, roll number, registration number, examination passed, exam year, school name, and school address details.",
+    "fields": {
+      "student_name": {"type": "str", "description": "Student's full name in English."},
+      "father_name": {"type": "str", "description": "Father's full name."},
+      "mother_name": {"type": "str", "description": "Mother's full name."},
+      "roll_number": {"type": "str", "description": "Roll or seat number as printed."},
+      "registration_number": {"type": "str", "description": "Registration or enrollment number as printed."},
+      "examination_passed": {"type": "str", "description": "Name of the examination or certificate."},
+      "exam_year": {"type": "str", "description": "Year of examination."},
+      "school_name": {"type": "str", "description": "Only the institution name, not location text."},
+      "school_address": {
+        "type": "object",
+        "description": "School address with address_line, city_or_village, district, state, and pincode.",
+        "fields": {
+          "address_line": {"type": "str", "description": "Locality or area text not captured elsewhere."},
+          "city_or_village": {"type": "str", "description": "City or village name if identifiable."},
+          "district": {"type": "str", "description": "District if explicitly labeled or unambiguous."},
+          "state": {"type": "str", "description": "State only if printed."},
+          "pincode": {"type": "str", "description": "6-digit PIN code if present."}
+        }
+      }
+    }
+  },
+  "transfer_certificate": {
+    "display_name": "Transfer Certificate",
+    "instructions": "Extract the student's name, parents' names, date of birth, school name, school address, date of leaving, roll number, and TC number.",
+    "fields": {
+      "candidate_name": {"type": "str", "description": "Student's full name in English."},
+      "father_name": {"type": "str", "description": "Father's full name."},
+      "mother_name": {"type": "str", "description": "Mother's full name."},
+      "date_of_birth": {"type": "str", "description": "Date of birth in DD/MM/YYYY format if possible."},
+      "school_name": {"type": "str", "description": "Only the institution name, not location text."},
+      "school_address": {
+        "type": "object",
+        "description": "School address with address_line, city_or_village, district, state, and pincode.",
+        "fields": {
+          "address_line": {"type": "str", "description": "Locality or area text not captured elsewhere."},
+          "city_or_village": {"type": "str", "description": "City or village name if identifiable."},
+          "district": {"type": "str", "description": "District if explicitly labeled or unambiguous."},
+          "state": {"type": "str", "description": "State only if printed."},
+          "pincode": {"type": "str", "description": "6-digit PIN code if present."}
+        }
+      },
+      "date_of_leaving": {"type": "str", "description": "Date the student left the school."},
+      "roll_number": {"type": "str", "description": "Roll or admission number as printed."},
+      "tc_number": {"type": "str", "description": "Transfer certificate number."}
+    }
+  },
+  "voter_id": {
+    "display_name": "Voter ID Card",
+    "instructions": "Extract the voter's name, EPIC number, gender, date of birth or age, relation name and type, voter address, assembly constituency, and issue date.",
+    "fields": {
+      "name": {"type": "str", "description": "Full name in English."},
+      "epic_number": {"type": "str", "description": "EPIC number or Voter ID number as printed."},
+      "gender": {"type": "str", "description": "Gender or sex in English."},
+      "date_of_birth": {"type": "str", "description": "Date of birth or age if printed."},
+      "relation_name": {"type": "str", "description": "Father's, mother's, husband's, or guardian's name as printed."},
+      "relation_type": {"type": "str", "description": "Relation prefix such as Father, Husband, Mother, or Guardian."},
+      "voter_address": {
+        "type": "object",
+        "description": "Voter residential address with address_line, city_or_village, district, state, and pincode.",
+        "fields": {
+          "address_line": {"type": "str", "description": "House, street, locality, or village text not captured elsewhere."},
+          "city_or_village": {"type": "str", "description": "City, town, or village name if identifiable."},
+          "district": {"type": "str", "description": "District if explicitly labeled or unambiguous."},
+          "state": {"type": "str", "description": "State only if printed."},
+          "pincode": {"type": "str", "description": "6-digit PIN code if present."}
+        }
+      },
+      "assembly_constituency": {"type": "str", "description": "Assembly constituency name and/or number."},
+      "issue_date": {"type": "str", "description": "Date of issue if printed."}
+    }
+  }
+}
