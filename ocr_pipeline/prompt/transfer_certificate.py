@@ -19,6 +19,7 @@ Extract the following fields from this raw Transfer Certificate (TC) text:
 ### Certificate Details
 - date_of_leaving: Date of leaving the school in English, e.g. '31ST MARCH 2003'
 - roll_number: Roll number / admission number as printed on the certificate
+- tc_number : Transfer Certicate Number as per on the document.
 
 ### Extraction Rules:
 1. Handle OCR Artifacts: Reconstruct messy text, misspellings, or broken tables based on context.

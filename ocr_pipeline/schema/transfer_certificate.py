@@ -20,3 +20,6 @@ class TransferCertificate(BaseModel):
 
     date_of_leaving: Optional[str] = Field(None, description="Date of leaving in English, e.g. '31ST MARCH 2003'")
     roll_number: Optional[str] = Field(None, description="Roll number / admission number as printed on the certificate")
+    tc_number: Optional[str] = Field(None, description="Transfer Certificate Number on he document")
+    
+    

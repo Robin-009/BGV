@@ -11,6 +11,7 @@ from ocr_pipeline.prompt.tenth_marksheet_prompt import TENTH_MARKSHEET_PROMPT
 from ocr_pipeline.prompt.transfer_certificate import TRANSFER_CERTIFICATE_PROMPT
 from ocr_pipeline.prompt.twelfth_marksheet_prompt import TWELFTH_MARKSHEET_PROMPT
 from ocr_pipeline.prompt.voter_id_prompt import VOTER_ID_PROMPT
+from ocr_pipeline.prompt.internship_training_cert_prompt import INTERNSHIP_CERTIFICATE_PROMPT
 
 SYSTEM_PROMPT = (
     "You are an expert BGV (Background Verification) document analyst. "
@@ -30,6 +31,7 @@ PROMPT_MAP: Dict[str, str] = {
     "pan_card": PAN_CARD_PROMPT,
     "passport": PASSPORT_PROMPT,
     "employment_certificate": EMPLOYMENT_CERTIFICATE_PROMPT,
+    "internship_certificate": INTERNSHIP_CERTIFICATE_PROMPT,
     "tenth_marksheet": TENTH_MARKSHEET_PROMPT,
     "transfer_certificate": TRANSFER_CERTIFICATE_PROMPT,
     "twelfth_marksheet": TWELFTH_MARKSHEET_PROMPT,
