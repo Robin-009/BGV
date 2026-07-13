@@ -1,0 +1,39 @@
+| **Cost Component**              | **OCR 4 + Mistral Small** | **OCR 3 + Mistral Small** | **Savings (OCR 3 vs OCR 4)** |
+| ------------------------------- | ------------------------: | ------------------------: | ---------------------------: |
+| **OCR Cost (USD)**              |                    $4.000 |                    $2.000 |             **$2.000 (50%)** |
+| **Estimated LLM Cost (USD)**    |                    $0.383 |                    $0.383 |                       $0.000 |
+| **Total Cost (USD)**            |                **$4.383** |                **$2.383** |           **$2.000 (45.6%)** |
+| **OCR Cost (₹)**                |                   ₹384.00 |                   ₹192.00 |                  **₹192.00** |
+| **Estimated LLM Cost (₹)**      |                    ₹36.79 |                    ₹36.79 |                        ₹0.00 |
+| **Total Cost (₹)**              |               **₹420.79** |               **₹228.79** |          **₹192.00 (45.6%)** |
+| **Average Cost per Page (USD)** |              **$0.00438** |              **$0.00238** |                 **$0.00200** |
+| **Average Cost per Page (₹)**   |                **₹0.421** |                **₹0.229** |                   **₹0.192** |
+
+
+| **Metric**                     | **Previous Run** | **Current Run** |  **Difference** |     **OCR 4** |            **OCR 3** |
+| ------------------------------ | ---------------: | --------------: | --------------: | ------------: | -------------------: |
+| **Pages Processed**            |                8 |               8 |               0 |       $0.0320 |              $0.0160 |
+| **Prompt Tokens**              |           13,186 |           8,467 | −4,719 (−35.8%) |             — |                    — |
+| **Completion Tokens**          |            1,814 |           2,253 |   +439 (+24.2%) |             — |                    — |
+| **Total Tokens**               |           15,000 |          10,720 | −4,280 (−28.5%) |             — |                    — |
+| **LLM Cost (USD)**             |        $0.003066 |       $0.002622 |      −$0.000444 |          Same |                 Same |
+| **LLM Cost (₹)**               |            ₹0.29 |           ₹0.25 |          −₹0.05 |          Same |                 Same |
+| **OCR Cost (USD)**             |                — |               — |               — |       $0.0320 |              $0.0160 |
+| **OCR Cost (₹)**               |                — |               — |               — |         ₹3.07 |                ₹1.54 |
+| **Previous Run – Total (USD)** |                — |               — |               — | **$0.035066** |        **$0.019066** |
+| **Previous Run – Total (₹)**   |                — |               — |               — |     **₹3.37** |            **₹1.83** |
+| **Current Run – Total (USD)**  |                — |               — |               — | **$0.034622** |        **$0.018622** |
+| **Current Run – Total (₹)**    |                — |               — |               — |     **₹3.32** |            **₹1.79** |
+| **Savings vs OCR 4 (USD)**     |                — |               — |               — |             — | **$0.0160 (≈45.6%)** |
+| **Savings vs OCR 4 (₹)**       |                — |               — |               — |             — |   **₹1.54 (≈45.6%)** |
+
+
+##In the above comp the mistral - small model is 2603
+
+
+mistral-small-2603 -> Latest model, price: $0.15/M ; $0.6/M
+
+mistral-small-2506 -> will be depreciated
+
+mistral-ocr-2512 -> $2/1000 -> Batching
+mistral-ocr-4-0  -> $4/1000 -> Bounding Box, Batching

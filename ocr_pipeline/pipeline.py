@@ -21,7 +21,7 @@ class OCRPipeline:
         b64_content = base64.b64encode(file_content).decode("utf-8")
         
         ocr_response = self.client.ocr.process(
-            model="mistral-ocr-latest",
+            model="mistral-ocr-2512",
             document={
                 "type": "document_url",
                 "document_url": f"data:application/pdf;base64,{b64_content}",
@@ -61,7 +61,7 @@ class OCRPipeline:
 
         # Fire unified payload execution
         chat_response = self.client.chat.complete(
-            model="mistral-small-latest",
+            model="mistral-small-2603",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT + " Output a nested JSON container mapping precisely to requested schema keys."},
                 {"role": "user", "content": composite_user_prompt},
