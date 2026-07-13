@@ -1,6 +1,7 @@
 import os
 import base64
 import json
+import logging
 from typing import Optional, Any, List, Dict
 from mistralai.client import Mistral
 from dotenv import load_dotenv
@@ -8,6 +9,16 @@ from ocr_pipeline.schema_map import SCHEMA_MAP
 from ocr_pipeline.prompt_mapper import PROMPT_MAP, SYSTEM_PROMPT
 
 load_dotenv()
+
+log_directory = "logs"
+os.makedirs(log_directory, exist_ok=True)
+log_filepath = os.path.join(log_directory, "pipeline.log")
+
+logging.basicConfig(level= logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                    handlers=[logging.FileHandler(log_filepath),
+                              logging.StreamHandler()])
+
+logger  = logging.getLogger("ocr_pipeline")
 
 class OCRPipeline:
     def __init__(self, api_key: Optional[str] = None):
@@ -21,15 +32,17 @@ class OCRPipeline:
         b64_content = base64.b64encode(file_content).decode("utf-8")
         
         ocr_response = self.client.ocr.process(
-            model="mistral-ocr-2512",
+            model="mistral-ocr-latest",
             document={
                 "type": "document_url",
                 "document_url": f"data:application/pdf;base64,{b64_content}",
             },
         )
+        input_pages = len(ocr_response.pages)
+        markdown_text = "\n\n".join(page.markdown for page in ocr_response.pages)
         
-        return "\n\n".join(page.markdown for page in ocr_response.pages)
-
+        return markdown_text, input_pages        
+        
     def _extract_structured_data(self, text: str, doc_types: List[str]) -> Dict[str, Any]:
         """Uses a single LLM call to extract multiple schemas simultaneously from the OCR text."""
         
@@ -61,7 +74,7 @@ class OCRPipeline:
 
         # Fire unified payload execution
         chat_response = self.client.chat.complete(
-            model="mistral-small-2603",
+            model="mistral-small-latest",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT + " Output a nested JSON container mapping precisely to requested schema keys."},
                 {"role": "user", "content": composite_user_prompt},
@@ -72,6 +85,10 @@ class OCRPipeline:
 
         raw_json = chat_response.choices[0].message.content
         extracted_json = json.loads(raw_json)
+        
+        # Extract token counts from response usage metadata
+        input_tokens = getattr(chat_response.usage, "prompt_tokens", 0)
+        total_tokens = getattr(chat_response.usage, "total_tokens", 0)
         
         # Cross validate schemas and output cleanly 
         validated_data = {}
@@ -84,10 +101,23 @@ class OCRPipeline:
                 # Graceful fallback: return the raw dictionary segment if minor schema validation fails
                 validated_data[doc_type] = schema_data
 
-        return validated_data
+        return validated_data, input_tokens, total_tokens
 
     def process(self, file_content: bytes, doc_types: List[str]):
         """Full pipeline processing: One OCR Call -> One LLM Compilation Multi-Extraction."""
-        raw_text = self._get_raw_ocr(file_content)
-        structured_data = self._extract_structured_data(raw_text, doc_types)
-        return structured_data, raw_text
+        raw_text, input_pages = self._get_raw_ocr(file_content)
+        structured_data, input_tokens, total_tokens = self._extract_structured_data(raw_text, doc_types)
+        
+        logger.info(
+            f"[OCR Pipeline Metrics] Input Pages: {input_pages} |"
+            f"Input Tokens: {input_tokens} | Total Tokens: {total_tokens}"
+        )
+#         db.execute(
+#         "INSERT INTO ocr_logs (doc_types, input_pages, input_tokens, total_tokens) VALUES (%s, %s, %s, %s)",
+#         (json.dumps(doc_types), input_pages, input_tokens, total_tokens)
+# )
+        return structured_data, raw_text, {
+            "input_pages": input_pages,
+            "input_tokens": input_tokens,
+            "total_tokens": total_tokens
+        }

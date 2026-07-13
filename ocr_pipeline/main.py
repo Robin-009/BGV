@@ -65,7 +65,6 @@ def parse_doc_types_input(doc_types: str) -> List[str]:
 # async def root():
 #     return {"message": "API is running"}
 
-
 @app.get("/") #---COMMENT OUT THIS WHEN RUNNING IN MAIN FRONTEND
 async def read_index():
     return FileResponse(os.path.join(static_dir, "index.html")) ##this is for testing 
@@ -95,12 +94,13 @@ async def extract_document(
         parsed_doc_types = parse_doc_types_input(doc_types)
 
         content = await file.read()
-        structured_data, raw_text = pipeline.process(content, parsed_doc_types)
+        structured_data, raw_text , metrics= pipeline.process(content, parsed_doc_types)
         
         return {
             "document_types": parsed_doc_types,
             "extracted_data": structured_data,
-            "raw_ocr_text": raw_text
+            "raw_ocr_text": raw_text,
+            "metrics": metrics
         }
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
