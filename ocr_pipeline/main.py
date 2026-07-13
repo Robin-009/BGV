@@ -94,7 +94,7 @@ async def extract_document(
         parsed_doc_types = parse_doc_types_input(doc_types)
 
         content = await file.read()
-        structured_data, raw_text , metrics= pipeline.process(content, parsed_doc_types)
+        structured_data, raw_text , metrics= await pipeline.process(content, parsed_doc_types)
         
         return {
             "document_types": parsed_doc_types,

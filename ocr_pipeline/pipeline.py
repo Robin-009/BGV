@@ -2,6 +2,7 @@ import os
 import base64
 import json
 import logging
+import asyncio
 from typing import Optional, Any, List, Dict
 from mistralai.client import Mistral
 from dotenv import load_dotenv
@@ -26,8 +27,12 @@ class OCRPipeline:
         if not self.api_key:
             raise ValueError("MISTRAL_API_KEY must be set in environment or passed to constructor")
         self.client = Mistral(api_key=self.api_key)
+        
+        # Since 0.83 RPS is fast but 50k TPM is small, lock concurrency to 1.
+        # This creates an orderly, single-file line so payloads don't stack up up over 50k tokens.
+        self.semaphore = asyncio.Semaphore(1)
 
-    def _get_raw_ocr(self, file_content: bytes) -> str:
+    async def _get_raw_ocr(self, file_content: bytes) -> str:
         """Processes the PDF/Image and returns markdown text."""
         b64_content = base64.b64encode(file_content).decode("utf-8")
         
@@ -43,7 +48,7 @@ class OCRPipeline:
         
         return markdown_text, input_pages        
         
-    def _extract_structured_data(self, text: str, doc_types: List[str]) -> Dict[str, Any]:
+    async def _extract_structured_data(self, text: str, doc_types: List[str]) -> Dict[str, Any]:
         """Uses a single LLM call to extract multiple schemas simultaneously from the OCR text."""
         
         composite_user_prompt = (
@@ -103,21 +108,49 @@ class OCRPipeline:
 
         return validated_data, input_tokens, total_tokens
 
-    def process(self, file_content: bytes, doc_types: List[str]):
-        """Full pipeline processing: One OCR Call -> One LLM Compilation Multi-Extraction."""
-        raw_text, input_pages = self._get_raw_ocr(file_content)
-        structured_data, input_tokens, total_tokens = self._extract_structured_data(raw_text, doc_types)
+    async def process(self, file_content: bytes, doc_types: List[str]):
+        """Full Async pipeline processing: One OCR Call -> One LLM Compilation Multi-Extraction."""
         
-        logger.info(
-            f"[OCR Pipeline Metrics] Input Pages: {input_pages} |"
-            f"Input Tokens: {input_tokens} | Total Tokens: {total_tokens}"
-        )
-#         db.execute(
-#         "INSERT INTO ocr_logs (doc_types, input_pages, input_tokens, total_tokens) VALUES (%s, %s, %s, %s)",
-#         (json.dumps(doc_types), input_pages, input_tokens, total_tokens)
-# )
-        return structured_data, raw_text, {
-            "input_pages": input_pages,
-            "input_tokens": input_tokens,
-            "total_tokens": total_tokens
-        }
+        max_retries = 5
+        backoff_factor = 2
+        
+        async with self.semaphore:
+            for attempt in range(max_retries):
+                try:
+                    raw_text, input_pages = await self._get_raw_ocr(file_content)
+                    
+                    await asyncio.sleep(2)
+                    structured_data, input_tokens, total_tokens =await self._extract_structured_data(raw_text, doc_types)
+                    
+                    logger.info(
+                        f"[OCR Pipeline Metrics] Input Pages: {input_pages} |"
+                        f"Input Tokens: {input_tokens} | Total Tokens: {total_tokens}"
+                    )
+            #         db.execute(
+            #         "INSERT INTO ocr_logs (doc_types, input_pages, input_tokens, total_tokens) VALUES (%s, %s, %s, %s)",
+            #         (json.dumps(doc_types), input_pages, input_tokens, total_tokens)
+            #         )      
+                    if total_tokens> 30000:
+                        cooldown_delay = 30
+                        logger.info(f"High token usage detected ({total_tokens} tokens). Throttling next file queue for {cooldown_delay}s...")
+                        await asyncio.sleep(cooldown_delay)
+                        
+                        
+                    return structured_data, raw_text, {
+                        "input_pages": input_pages,
+                        "input_tokens": input_tokens,
+                        "total_tokens": total_tokens
+                    }
+                    
+                except Exception as e:
+                    is_rate_limit = "429" in str(e) or "too many requests" in str(e).lower()
+                    
+                    if is_rate_limit and attempt < max_retries - 1:
+                        # Exponential cooling: 2^(1+1)=4s, 2^(2+1)=8s, etc. 
+                        # We append an extra 35 seconds to ensure the sliding 60-second window resets.
+                        sleep_time = (backoff_factor ** (attempt + 1)) + 35
+                        logger.warning(f"Rate limit triggered (429). Resetting window for {sleep_time}s... (Attempt {attempt + 1}/{max_retries})")
+                        await asyncio.sleep(sleep_time)
+                    else:
+                        logger.error(f"Pipeline process encountered an unrecoverable failure: {str(e)}")
+                        raise e

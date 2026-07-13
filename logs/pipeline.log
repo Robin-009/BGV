@@ -11,3 +11,9 @@
 2026-07-13 17:21:34,852 - httpx - INFO - HTTP Request: POST https://api.mistral.ai/v1/ocr "HTTP/1.1 200 OK"
 2026-07-13 17:21:41,108 - httpx - INFO - HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
 2026-07-13 17:21:41,110 - ocr_pipeline - INFO - [OCR Pipeline Metrics] Input Pages: 8 |Input Tokens: 7360 | Total Tokens: 8637
+2026-07-13 17:37:58,529 - httpx - INFO - HTTP Request: POST https://api.mistral.ai/v1/ocr "HTTP/1.1 200 OK"
+2026-07-13 17:38:08,722 - httpx - INFO - HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-13 17:38:08,747 - ocr_pipeline - INFO - [OCR Pipeline Metrics] Input Pages: 8 |Input Tokens: 11217 | Total Tokens: 13314
+2026-07-13 17:38:41,615 - httpx - INFO - HTTP Request: POST https://api.mistral.ai/v1/ocr "HTTP/1.1 200 OK"
+2026-07-13 17:38:51,268 - httpx - INFO - HTTP Request: POST https://api.mistral.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-13 17:38:51,272 - ocr_pipeline - INFO - [OCR Pipeline Metrics] Input Pages: 8 |Input Tokens: 13107 | Total Tokens: 15217
