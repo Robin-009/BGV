@@ -37,3 +37,16 @@ mistral-small-2506 -> will be depreciated
 
 mistral-ocr-2512 -> $2/1000 -> Batching
 mistral-ocr-4-0  -> $4/1000 -> Bounding Box, Batching
+
+
+
+30*20 = 600
+30 * 15000 * 0.15 /1000000 = 0.0675 $
+30 * 2000 * 0.60 / 1M = 0.036 $
+
+= rupess 9.8 mistral small
+
+= OCR = 228 rupees
+
+total = 300 (MAX)
+
